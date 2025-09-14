@@ -16,6 +16,10 @@ namespace ChronoCLI {
     virtual bool Validate() const { return !m_value.empty(); }
 
     void SetValue(const std::string& value);
+
+    const std::string& GetKey() const { return m_key; }
+    const std::string& GetValue() const { return m_value; }
+    bool IsRequired() const { return m_required; }
   };
 
 }  // namespace ChronoCLI

@@ -9,10 +9,12 @@ namespace ChronoCLI {
 
   class CommandRegistry {
    private:
-    std::map<std::string, Command*> m_commands;
+    std::map<std::string, const Argument*> m_options;
+    std::map<std::string, const Command*> m_commands;
 
    public:
-    void Register(Command* cmd);
+    void RegisterCommand(const Command* cmd);
+    void RegisterOption(const Argument* arg);
 
     int Run(int argc, const char* argv[]);
   };

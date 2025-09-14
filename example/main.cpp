@@ -1,11 +1,20 @@
 #include <iostream>
 
-int main(int argc, const char* argv[]) {
-  std::cout << "Argument count: " << argc;
-  std::cout << "\nArguments:\n";
-  for (int i = 0; i < argc; ++i) {
-    std::cout << "  argv[" << i << "]: " << argv[i] << "\n";
-  }
+#include "src/Exception.hpp"
 
+using namespace ChronoCLI;
+
+int main(int argc, const char* argv[]) {
+  try {
+    // throw ParserError::TypeConvertError("abc", typeid(int).name());
+    // throw CommandError::InvalidArgument("filename", "must be a valid path");
+    throw Exception("Test error");
+  } catch (ParserError::ParserError& e) {
+    e.print();
+  } catch (CommandError::CommandError& e) {
+    e.print();
+  } catch (Exception& e) {
+    e.print();
+  }
   return 0;
 }

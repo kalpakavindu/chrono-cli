@@ -12,7 +12,7 @@ namespace ChronoCLI {
     mutable std::string full_message;
 
    public:
-    explicit Exception(const std::string& message) : error_message(message), error_type("Argument Error") {}
+    explicit Exception(const std::string& message) : error_message(message), error_type("Runtime Error") {}
     Exception(const std::string& type, const std::string& message) : error_message(message), error_type(type) {}
 
     const char* what() const noexcept override {
@@ -20,47 +20,68 @@ namespace ChronoCLI {
       return full_message.c_str();
     }
 
-    void print() const;
+    virtual void print() const;
   };
 
-  namespace Error {
-    class UnknownOption : public Exception {
+  // Basic command input errors
+  namespace CommandError {
+    class CommandError : public Exception {
      public:
-      UnknownOption(const std::string& option) : Exception("Unknown Option", "The option '" + option + "' is not recognized") {}
+      CommandError(const std::string& type, const std::string& message) : Exception(type, message) {}
+
+      void print() const override;
     };
 
-    class UnknownCommand : public Exception {
+    class UnknownOption : public CommandError {
      public:
-      UnknownCommand(const std::string& command) : Exception("Unknown Command", "The command '" + command + "' is not recognized") {}
+      UnknownOption(const std::string& option) : CommandError("Unknown Option", "The option '" + option + "' is not recognized") {}
     };
 
-    class InvalidOption : public Exception {
+    class UnknownCommand : public CommandError {
      public:
-      InvalidOption(const std::string& option) : Exception("Invalid Option", "The option '" + option + "' is invalid") {}
+      UnknownCommand(const std::string& command) : CommandError("Unknown Command", "The command '" + command + "' is not recognized") {}
     };
 
-    class InvalidArgument : public Exception {
+    class InvalidOption : public CommandError {
+     public:
+      InvalidOption(const std::string& option) : CommandError("Invalid Option", "The option '" + option + "' is invalid") {}
+    };
+
+    class InvalidArgument : public CommandError {
      public:
       InvalidArgument(const std::string& argument, const std::string& reason)
-          : Exception("Invalid Argument", "Argument '" + argument + "' is invalid: " + reason) {}
+          : CommandError("Invalid Argument", "Argument '" + argument + "' is invalid: " + reason) {}
     };
 
-    class MissingArgument : public Exception {
+    class MissingArgument : public CommandError {
      public:
-      MissingArgument(const std::string& argument) : Exception("Missing Argument", "Required argument '" + argument + "' is missing") {}
+      MissingArgument(const std::string& argument) : CommandError("Missing Argument", "Required argument '" + argument + "' is missing") {}
     };
 
-    class TooManyArguments : public Exception {
+    class TooManyArguments : public CommandError {
      public:
-      TooManyArguments() : Exception("Too Many Arguments", "Too many arguments provided") {}
+      TooManyArguments() : CommandError("Too Many Arguments", "Too many arguments provided") {}
     };
 
-    class RuntimeError : public Exception {
+  }  // namespace CommandError
+
+  namespace ParserError {
+
+    class ParserError : public Exception {
      public:
-      RuntimeError(const std::string& message) : Exception("Runtime Error", message) {}
+      ParserError(const std::string& message) : Exception("Parser Error", message) {}
+
+      void print() const override;
     };
 
-  }  // namespace Error
+    class TypeConvertError : public ParserError {
+     public:
+      TypeConvertError(const std::string& value, const std::string& target_type)
+          : ParserError("Failed to convert value '" + value + "' to type '" + target_type + "'") {}
+    };
+
+  }  // namespace ParserError
+
 }  // namespace ChronoCLI
 
 #endif

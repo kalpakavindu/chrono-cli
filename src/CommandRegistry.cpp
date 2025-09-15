@@ -13,7 +13,7 @@ void CommandRegistry::RegisterCommand(const Command* cmd) {
 void CommandRegistry::RegisterOption(const Argument* arg) {
   if (arg == nullptr) return;
 
-  if (arg->IsRequired()) throw Error::RuntimeError("Required arguments cannot be registered as global options.");
+  if (arg->IsRequired()) throw Exception("Required arguments cannot be registered as global options.");
 
   m_options[arg->GetKey()] = arg;
 }

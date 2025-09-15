@@ -11,57 +11,27 @@ T ArgumentParser::m_convert(const std::string& value) const {
   if constexpr (std::is_same_v<T, double>) return std::stod(value);
   if constexpr (std::is_same_v<T, float>) return std::stof(value);
   if constexpr (std::is_same_v<T, bool>) return value == "true" || value == "1";
-  throw Error::RuntimeError(value, typeid(T).name());
-}
-
-ArgumentParser::ArgumentParser(int argc, const char* argv[]) {
-  // UNDONE: Implementation of argument parsing logic
-}
-
-bool ArgumentParser::HasKey(const std::string& key) const {
-  return m_args.find(key) != m_args.end();
-}
-
-bool ArgumentParser::HasCommand() const {
-  return m_commandName.has_value();
-}
-
-const std::string& ArgumentParser::GetAppName() const {
-  return m_appName;
-}
-
-const std::string& ArgumentParser::GetCommandName() const {
-  if (m_commandName.has_value()) return m_commandName.value();
-
-  throw Error::RuntimeError("No command were given");
-}
-
-const std::vector<const std::string>& ArgumentParser::GetPositionalArgs() const {
-  return m_positionalArgs;
+  throw ParserError::TypeConvertError(value, typeid(T).name());
 }
 
 template <typename T>
-T ArgumentParser::Get(const std::string& key) const {
-  auto it = m_args.find(key);
-  if (it != m_args.end()) return m_convert<T>(it->second);
-  throw Error::MissingArgument(key);
+T ArgumentParser::m_get(std::map<std::string, std::string>& m, const std::string& key) {
+  auto it = m.find(key);
+  if (it != m.end()) return m_convert<T>(it->second);
+  throw CommandError::MissingArgument(key);
 }
 
 template <typename T>
-std::list<T> ArgumentParser::GetList(const std::string& key, const std::string& delim) const {
-  auto it = m_args.find(key);
+T ArgumentParser::m_getList(std::map<std::string, std::string>& m, const std::string& key, const std::string& delim) {
+  auto it = m.find(key);
 
-  if (it != m_args.end()) {
+  if (it != m.end()) {
     std::list<T> result;
     size_t pos = it->second.find(delim);
 
     while (pos != std::string::npos) {
       token = it->second.substr(0, pos);
-      try {
-        result.push_back(m_convert<T>(token));
-      } catch (ParserError::TypeConversionError& e) {
-        e.print();
-      }
+      result.push_back(m_convert<T>(token));
       it.second.erase(0, pos + delim.length());
       pos = it->second.find(delim);
     }
@@ -69,5 +39,69 @@ std::list<T> ArgumentParser::GetList(const std::string& key, const std::string& 
     return result;
   }
 
-  throw Error::MissingArgument(key);
+  throw CommandError::MissingArgument(key);
+}
+
+void ArgumentParser::m_parseOption(std::map<std::string, std::string>& m, std::string& arg) {
+  size_t eqPos = arg.find("=");
+  if (eqPos != std::string::npos) {
+    // Key value arguments
+    m[arg.substr(0, eqPos)] = arg.substr(eqPos + 1);
+  } else {
+    // Flags
+    m[arg] = "true";
+  }
+}
+
+ArgumentParser::ArgumentParser(int argc, const char* argv[]) {
+  // UNDONE: Implementation of argument parsing logic
+
+  m_appName = argv[0];
+
+  int pos = 1;
+  int end = argc;
+
+  while (pos < end) {
+    std::string arg = argv[pos];
+
+    if (!arg.starts_with("-")) {
+      // First arg not starting with '-' is a command
+      m_commandName = arg;
+      ++pos;  // Set the cursor to the first command argument
+      break;
+    }
+
+    m_parseOption(m_globalArgs, arg);
+    ++pos;
+  }
+
+  while (pos < end) {
+    std::string arg = argv[pos];
+
+    if (arg.starts_with("-")) {
+      m_parseOption(m_args, arg);
+    } else {
+      m_positionalArgs.push_back(argv[pos]);
+    }
+
+    ++pos;
+  }
+}
+
+bool ArgumentParser::HasKey(const std::string& key) const {
+  return m_args.find(key) != m_args.end();
+}
+
+bool ArgumentParser::HasGlobalKey(const std::string& key) const {
+  return m_globalArgs.find(key) != m_args.end();
+}
+
+bool ArgumentParser::HasCommand() const {
+  return m_commandName.has_value();
+}
+
+const std::string& ArgumentParser::GetCommandName() const {
+  if (m_commandName.has_value()) return m_commandName.value();
+
+  throw ParserError::ParserError("No command were given");
 }

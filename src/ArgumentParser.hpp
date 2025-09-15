@@ -15,7 +15,7 @@ namespace ChronoCLI {
     std::optional<std::string> m_commandName;
     std::map<std::string, std::string> m_args;
     std::map<std::string, std::string> m_globalArgs;
-    std::vector<const std::string> m_positionalArgs;
+    std::vector<std::string> m_positionalArgs;
 
     void m_parseOption(std::map<std::string, std::string>& m, std::string& arg);
 
@@ -34,7 +34,7 @@ namespace ChronoCLI {
     bool HasKey(const std::string& key) const;
     bool HasGlobalKey(const std::string& key) const;
     bool HasCommand() const;
-    const std::string& GetCommandName() const;
+    const std::string GetCommandName() const;
 
     template <typename T>
     T GetKey(const std::string& key) const { return m_get<T>(m_args, key); }
@@ -48,8 +48,8 @@ namespace ChronoCLI {
     template <typename T>
     std::list<T> GetGlobalList(const std::string& key, const std::string& delim) const { return m_getList<T>(m_globalArgs, key, delim); }
 
-    const std::string& GetAppName() const { return m_appName; }
-    const std::vector<const std::string>& GetPositionalArgs() const { return m_positionalArgs; }
+    const std::string GetAppName() const { return m_appName; }
+    const std::vector<std::string> GetPositionalArgs() const { return m_positionalArgs; }
   };
 
 }  // namespace ChronoCLI

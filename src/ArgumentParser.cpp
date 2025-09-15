@@ -30,9 +30,9 @@ T ArgumentParser::m_getList(std::map<std::string, std::string>& m, const std::st
     size_t pos = it->second.find(delim);
 
     while (pos != std::string::npos) {
-      token = it->second.substr(0, pos);
+      std::string token = it->second.substr(0, pos);
       result.push_back(m_convert<T>(token));
-      it.second.erase(0, pos + delim.length());
+      it->second.erase(0, pos + delim.length());
       pos = it->second.find(delim);
     }
 
@@ -54,17 +54,15 @@ void ArgumentParser::m_parseOption(std::map<std::string, std::string>& m, std::s
 }
 
 ArgumentParser::ArgumentParser(int argc, const char* argv[]) {
-  // UNDONE: Implementation of argument parsing logic
-
   m_appName = argv[0];
 
   int pos = 1;
-  int end = argc;
 
-  while (pos < end) {
+  // Process global options
+  while (pos < argc) {
     std::string arg = argv[pos];
 
-    if (!arg.starts_with("-")) {
+    if (!arg.empty() && (arg.substr(0, 1) != "-")) {
       // First arg not starting with '-' is a command
       m_commandName = arg;
       ++pos;  // Set the cursor to the first command argument
@@ -75,10 +73,11 @@ ArgumentParser::ArgumentParser(int argc, const char* argv[]) {
     ++pos;
   }
 
-  while (pos < end) {
+  // Process command options
+  while (pos < argc) {
     std::string arg = argv[pos];
 
-    if (arg.starts_with("-")) {
+    if (!arg.empty() && (arg.substr(0, 1) == "-")) {
       m_parseOption(m_args, arg);
     } else {
       m_positionalArgs.push_back(argv[pos]);
@@ -100,7 +99,7 @@ bool ArgumentParser::HasCommand() const {
   return m_commandName.has_value();
 }
 
-const std::string& ArgumentParser::GetCommandName() const {
+const std::string ArgumentParser::GetCommandName() const {
   if (m_commandName.has_value()) return m_commandName.value();
 
   throw ParserError::ParserError("No command were given");

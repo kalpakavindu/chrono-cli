@@ -1,5 +1,5 @@
-file(GLOB SOURCE_FILES Exception.cpp Exception.hpp)
-file(GLOB HEADER_FILES Exception.hpp)
+file(GLOB SOURCE_FILES Exception.cpp Exception.hpp ArgumentParser.cpp ArgumentParser.hpp)
+file(GLOB HEADER_FILES Exception.hpp ArgumentParser.hpp)
 
 add_library(chronocli STATIC ${SOURCE_FILES})
 

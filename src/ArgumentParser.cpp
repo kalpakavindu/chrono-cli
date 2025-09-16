@@ -1,48 +1,14 @@
 #include "ArgumentParser.hpp"
 
-#include "Exception.hpp"
-
 using namespace ChronoCLI;
 
-template <typename T>
-T ArgumentParser::m_convert(const std::string& value) const {
-  if constexpr (std::is_same_v<T, std::string>) return value;
-  if constexpr (std::is_same_v<T, int>) return std::stoi(value);
-  if constexpr (std::is_same_v<T, double>) return std::stod(value);
-  if constexpr (std::is_same_v<T, float>) return std::stof(value);
-  if constexpr (std::is_same_v<T, bool>) return value == "true" || value == "1";
-  throw ParserError::TypeConvertError(value, typeid(T).name());
+std::map<std::string, std::string>& ArgumentParser::m_getTargetMap(bool isGlobal) {
+  return isGlobal ? m_globalArgs : m_args;
 }
 
-template <typename T>
-T ArgumentParser::m_get(std::map<std::string, std::string>& m, const std::string& key) {
-  auto it = m.find(key);
-  if (it != m.end()) return m_convert<T>(it->second);
-  throw CommandError::MissingArgument(key);
-}
+void ArgumentParser::m_parseOption(std::string& arg, bool isGlobal) {
+  auto& m = isGlobal ? m_globalArgs : m_args;
 
-template <typename T>
-T ArgumentParser::m_getList(std::map<std::string, std::string>& m, const std::string& key, const std::string& delim) {
-  auto it = m.find(key);
-
-  if (it != m.end()) {
-    std::list<T> result;
-    size_t pos = it->second.find(delim);
-
-    while (pos != std::string::npos) {
-      std::string token = it->second.substr(0, pos);
-      result.push_back(m_convert<T>(token));
-      it->second.erase(0, pos + delim.length());
-      pos = it->second.find(delim);
-    }
-
-    return result;
-  }
-
-  throw CommandError::MissingArgument(key);
-}
-
-void ArgumentParser::m_parseOption(std::map<std::string, std::string>& m, std::string& arg) {
   size_t eqPos = arg.find("=");
   if (eqPos != std::string::npos) {
     // Key value arguments
@@ -69,7 +35,7 @@ ArgumentParser::ArgumentParser(int argc, const char* argv[]) {
       break;
     }
 
-    m_parseOption(m_globalArgs, arg);
+    m_parseOption(arg, true);
     ++pos;
   }
 
@@ -78,7 +44,7 @@ ArgumentParser::ArgumentParser(int argc, const char* argv[]) {
     std::string arg = argv[pos];
 
     if (!arg.empty() && (arg.substr(0, 1) == "-")) {
-      m_parseOption(m_args, arg);
+      m_parseOption(arg, false);
     } else {
       m_positionalArgs.push_back(argv[pos]);
     }
@@ -92,7 +58,7 @@ bool ArgumentParser::HasKey(const std::string& key) const {
 }
 
 bool ArgumentParser::HasGlobalKey(const std::string& key) const {
-  return m_globalArgs.find(key) != m_args.end();
+  return m_globalArgs.find(key) != m_globalArgs.end();
 }
 
 bool ArgumentParser::HasCommand() const {

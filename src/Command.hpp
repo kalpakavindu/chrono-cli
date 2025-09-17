@@ -1,3 +1,4 @@
+#pragma once
 #ifndef CHRONOCLI_COMMAND_HPP
 #define CHRONOCLI_COMMAND_HPP
 

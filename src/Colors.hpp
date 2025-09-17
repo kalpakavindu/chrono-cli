@@ -1,3 +1,4 @@
+#pragma once
 #ifndef CHRONOCLI_COLORS_HPP
 #define CHRONOCLI_COLORS_HPP
 

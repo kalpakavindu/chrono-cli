@@ -1,3 +1,4 @@
+#pragma once
 #ifndef CHRONOCLI_EXCEPTION_HPP
 #define CHRONOCLI_EXCEPTION_HPP
 

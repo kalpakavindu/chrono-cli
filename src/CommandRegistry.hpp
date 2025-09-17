@@ -1,7 +1,6 @@
+#pragma once
 #ifndef CHRONOCLI_COMMANDREGISTRY_HPP
 #define CHRONOCLI_COMMANDREGISTRY_HPP
-
-#include <map>
 
 #include "Command.hpp"
 

@@ -4,18 +4,14 @@
 
 using namespace ChronoCLI;
 
-void CommandRegistry::RegisterCommand(const Command* cmd) {
-  if (cmd == nullptr) return;
-
-  m_commands[cmd->GetName()] = cmd;
+void CommandRegistry::RegisterCommand(Command& cmd) {
+  m_commands[cmd.GetName()] = &cmd;
 }
 
-void CommandRegistry::RegisterOption(const Argument* arg) {
-  if (arg == nullptr) return;
+void CommandRegistry::RegisterOption(Argument& arg) {
+  if (arg.IsRequired()) throw Exception("Required arguments cannot be registered as global options.");
 
-  if (arg->IsRequired()) throw Exception("Required arguments cannot be registered as global options.");
-
-  m_options[arg->GetKey()] = arg;
+  m_options[arg.GetKey()] = &arg;
 }
 
 int CommandRegistry::Run(int argc, const char* argv[]) {

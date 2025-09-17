@@ -13,8 +13,8 @@ namespace ChronoCLI {
     std::map<std::string, Command*> m_commands;
 
    public:
-    void RegisterCommand(const Command* cmd);
-    void RegisterOption(const Argument* arg);
+    void RegisterCommand(Command& cmd);
+    void RegisterOption(Argument& arg);
 
     int Run(int argc, const char* argv[]);
   };

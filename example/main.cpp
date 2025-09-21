@@ -1,34 +1,43 @@
 #include <iostream>
 
 #include "src/Argument.hpp"
-#include "src/Exception.hpp"
+#include "src/CommandRegistry.hpp"
 
 using namespace ChronoCLI;
 
-// class MyCommand : public Command {
-//  private:
-//   Argument arg1 = Argument("--arg");
+class MyCommand : public Command {
+ private:
+  Argument arg1 = Argument("arg1", "a1", false, "Test argument 1");
+  Argument arg2 = Argument("arg2", "a2", true, "Test argument 2");
+  PositionalArgument arg3 = PositionalArgument("test_name", true, "Test name for the argument");
 
-//  public:
-//   MyCommand() : Command("test", "Test command") {
-//     RegisterArgument(arg1);
-//   }
+ public:
+  MyCommand() : Command("test", "Test command") {
+    RegisterArgument(arg1);
+    RegisterArgument(arg2);
+    RegisterArgument(arg3);
+  }
 
-//   void Exec() override {
-//     std::cout << "Command completed: " << arg1.GetValue<std::string>() << std::endl;
-//   }
+  void Exec() override {
+    std::cout << "Command completed:" << "\n";
+    std::cout << arg1.GetKeyName() << ": " << arg1.Get<std::string>() << "\n";
+    std::cout << arg2.GetKeyName() << ": " << arg2.Get<std::string>() << "\n";
+    std::cout << arg3.GetKeyName() << ": " << arg3.Get<std::string>() << std::endl;
+  }
 
-//   void Help() override {
-//     std::cout << "This is a help message for test command." << std::endl;
-//   }
-// };
+  void Help() override {
+    std::cout << "This is a help message for test command." << std::endl;
+  }
+};
 
 int main(int argc, const char* argv[]) {
   try {
-    PositionalArgument positionalArg("positional", true, "Instance of `PositionalArgument` class");
+    MyCommand cmd1;
 
-    std::cout << positionalArg.IsRequired() << std::endl;
+    CommandRegistry C;
+    C.RegisterCommand(cmd1);
 
+    C.Run(argc, argv);
   } catch (Exception& e) {
     e.print();
   }

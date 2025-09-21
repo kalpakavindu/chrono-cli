@@ -38,16 +38,23 @@ namespace ChronoCLI {
     void Set(const std::string& value) { m_value = value; }
     bool IsSet() const { return !m_value.empty(); }
     bool IsRequired() const { return m_isRequired; }
+    bool HasShortKey() const { return m_shortkey.has_value(); }
 
     template <typename T>
     T Get() {
-      if (m_value.empty()) throw CommandError::MissingArgument(m_key);
+      if (m_value.empty()) {
+        if (m_isRequired) throw CommandError::MissingArgument(GetKeyName() + "|" + GetShortkeyName());
+        return m_convert<T>("");
+      }
       return m_convert<T>(m_value);
     }
 
     template <typename T>
     std::list<T> GetList(const std::string& delim) {
-      if (m_value.empty()) throw CommandError::MissingArgument(m_key);
+      if (m_value.empty()) {
+        if (m_isRequired) throw CommandError::MissingArgument(GetKeyName() + "|" + GetShortkeyName());
+        return m_convert<T>("");
+      }
 
       std::list<T> l;
       std::string v = m_value;  // Make a copy so that the original value never edited

@@ -20,8 +20,20 @@ void ArgumentParser::m_parseOption(std::string& arg, bool isGlobal) {
 }
 
 std::string& ArgumentParser::m_get(const std::string& key, bool isGlobal) {
-  auto& m = m_getTargetMap(isGlobal);
-  auto it = m.find(key);
+  std::map<std::string, std::string>::iterator it;
+
+  std::map<std::string, std::string>& m = m_getTargetMap(isGlobal);
+  size_t skpos = key.find("|");
+
+  if (skpos != std::string::npos) {
+    it = m.find(key.substr(0, skpos));
+    if (it == m.end()) {
+      it = m.find(key.substr(skpos + 1));
+    }
+  } else {
+    it = m.find(key);
+  }
+
   if (it == m.end()) throw CommandError::MissingArgument(key);
   return it->second;
 }
@@ -61,10 +73,18 @@ ArgumentParser::ArgumentParser(int argc, const char* argv[]) {
 }
 
 bool ArgumentParser::HasKey(const std::string& key) const {
+  size_t skpos = key.find("|");
+  if (skpos != std::string::npos) {
+    return (m_args.find(key.substr(0, skpos)) != m_args.end()) || (m_args.find(key.substr(skpos + 1)) != m_args.end());
+  }
   return m_args.find(key) != m_args.end();
 }
 
 bool ArgumentParser::HasGlobalKey(const std::string& key) const {
+  size_t skpos = key.find("|");
+  if (skpos != std::string::npos) {
+    return (m_globalArgs.find(key.substr(0, skpos)) != m_globalArgs.end()) || (m_globalArgs.find(key.substr(skpos + 1)) != m_globalArgs.end());
+  }
   return m_globalArgs.find(key) != m_globalArgs.end();
 }
 
@@ -74,6 +94,5 @@ bool ArgumentParser::HasCommand() const {
 
 const std::string ArgumentParser::GetCommandName() const {
   if (m_commandName.has_value()) return m_commandName.value();
-
-  throw ParserError::ParserError("No command were given");
+  return "";
 }

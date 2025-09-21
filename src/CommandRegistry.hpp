@@ -8,14 +8,14 @@ namespace ChronoCLI {
 
   class CommandRegistry {
    private:
-    std::map<std::string, Argument*> m_options;
+    std::map<std::string, GlobalArgument*> m_options;
     std::map<std::string, Command*> m_commands;
 
    public:
     void RegisterCommand(Command& cmd);
-    void RegisterOption(Argument& arg);
+    void RegisterOption(GlobalArgument& arg);
 
-    int Run(int argc, const char* argv[]);
+    void Run(int argc, const char* argv[]);
   };
 
 }  // namespace ChronoCLI

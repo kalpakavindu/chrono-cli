@@ -1,9 +1,6 @@
 #include "CommandRegistry.hpp"
 
-#include <iostream>
-
 #include "ArgumentParser.hpp"
-#include "Exception.hpp"
 
 using namespace ChronoCLI;
 

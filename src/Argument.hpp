@@ -4,7 +4,6 @@
 
 #include <list>
 #include <optional>
-#include <string>
 
 #include "Exception.hpp"
 

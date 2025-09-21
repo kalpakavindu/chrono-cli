@@ -16,7 +16,7 @@ namespace ChronoCLI {
 
    protected:
     void RegisterArgument(Argument& arg) {
-      m_args[arg.GetKey()] = &arg;
+      m_args[arg.GetKeyName()] = &arg;
     }
 
    public:
@@ -26,7 +26,7 @@ namespace ChronoCLI {
     const std::map<std::string, Argument*>& GetArgs() { return m_args; }
 
     virtual void Exec() = 0;
-    virtual void Help() const = 0;
+    virtual void Help() = 0;
   };
 
 }  // namespace ChronoCLI

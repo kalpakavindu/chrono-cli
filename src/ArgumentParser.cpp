@@ -19,6 +19,13 @@ void ArgumentParser::m_parseOption(std::string& arg, bool isGlobal) {
   }
 }
 
+std::string& ArgumentParser::m_get(const std::string& key, bool isGlobal) {
+  auto& m = m_getTargetMap(isGlobal);
+  auto it = m.find(key);
+  if (it == m.end()) throw CommandError::MissingArgument(key);
+  return it->second;
+}
+
 ArgumentParser::ArgumentParser(int argc, const char* argv[]) {
   m_appName = argv[0];
 

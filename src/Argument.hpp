@@ -3,6 +3,7 @@
 #define CHRONOCLI_ARGUMENT_HPP
 
 #include <list>
+#include <optional>
 #include <string>
 
 #include "Exception.hpp"
@@ -14,32 +15,32 @@ namespace ChronoCLI {
     template <typename T>
     const T m_convert(const std::string& value) {
       if constexpr (std::is_same_v<T, std::string>) return value;
-
       if constexpr (std::is_same_v<T, int>) return std::stoi(value);
       if constexpr (std::is_same_v<T, double>) return std::stod(value);
       if constexpr (std::is_same_v<T, float>) return std::stof(value);
       if constexpr (std::is_same_v<T, bool>) return value == "true" || value == "1";
-
       throw ParserError::TypeConvertError(value, typeid(T).name());
     }
 
    protected:
     std::string m_key;
+    std::string m_description;
+    std::optional<std::string> m_shortkey;
+    bool m_isRequired;
     std::string m_value;
-    bool m_required;
 
    public:
-    Argument(const std::string& key, bool required = false) : m_key(key), m_required(required) {}
+    Argument(const std::string& key, const std::string& shortkey, bool required, const std ::string& description);
 
-    virtual bool Validate() const { return !m_value.empty(); }
-    void SetValue(std::string& value);
+    std::string GetKeyName() const;
+    std::string GetShortkeyName() const;
 
-    const std::string& GetKeyName() const { return m_key; }
-    bool IsRequired() const { return m_required; }
-    bool IsSet() const { return m_value.empty(); }
+    void Set(const std::string& value) { m_value = value; }
+    bool IsSet() const { return !m_value.empty(); }
+    bool IsRequired() const { return m_isRequired; }
 
     template <typename T>
-    T GetValue() {
+    T Get() {
       if (m_value.empty()) throw CommandError::MissingArgument(m_key);
       return m_convert<T>(m_value);
     }
@@ -58,9 +59,32 @@ namespace ChronoCLI {
         v.erase(0, pos + delim.length());
         pos = v.find(delim);
       }
-      l.push_back(m_convert<T>(v));  // Get the last element
+      l.push_back(m_convert<T>(v));  // Append last element
       return l;
     }
+  };
+
+  class GlobalArgument : public Argument {
+   public:
+    GlobalArgument(const std::string& key, const std::string& shortkey, const std::string& description) : Argument(key, shortkey, false, description) {}
+  };
+
+  class PositionalArgument : public Argument {
+   private:
+    std::string m_placeholder;
+
+   public:
+    PositionalArgument(const std::string& placeholder, bool required, const std::string& description) : Argument("", "", required, description), m_placeholder(placeholder) {}
+
+    std::string GetKeyName() const { return "<" + m_placeholder + ">"; }
+  };
+
+  class Flag : public Argument {
+   public:
+    Flag(const std::string& key, const std::string& shortkey, bool required, const std::string& description) : Argument(key, shortkey, required, description) {}
+
+    void Set() { m_value = "1"; }
+    bool Get() { return m_value == "1"; }
   };
 
 }  // namespace ChronoCLI

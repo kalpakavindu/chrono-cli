@@ -36,8 +36,7 @@ int CommandRegistry::Run(int argc, const char* argv[]) {
 
       cit->second->Exec();
     } else {
-      // TODO: Populate global arguments with values
-      // TODO: Run global Exec
+      // UNDONE: Process global arguments
     }
   } catch (Exception& e) {
     e.print();

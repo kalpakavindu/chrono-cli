@@ -5,15 +5,13 @@
 #include "Command.hpp"
 
 namespace ChronoCLI {
-
   class CommandRegistry {
    private:
-    std::map<std::string, GlobalArgument*> m_options;
     std::map<std::string, Command*> m_commands;
+    void m_Help(const std::string& appname) const;
 
    public:
     void RegisterCommand(Command& cmd);
-    void RegisterOption(GlobalArgument& arg);
 
     void Run(int argc, const char* argv[]);
   };

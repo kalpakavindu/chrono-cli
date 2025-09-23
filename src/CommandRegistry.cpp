@@ -1,27 +1,44 @@
 #include "CommandRegistry.hpp"
 
+#include <iostream>
+
 #include "ArgumentParser.hpp"
 
 using namespace ChronoCLI;
+
+void CommandRegistry::m_Help(const std::string& appname) const {
+  std::cout << "Usage:\n";
+  std::cout << "  " << appname << " [COMMAND] [OPTIONS] <ARGUMENTS>";
+  std::cout << "\n\nAvailable commands:\n";
+  for (auto& it : m_commands) {
+    std::string s = "  " + it.first;
+    int i = s.size();
+    while (i < 15) {
+      s += " ";
+      ++i;
+    }
+    s += it.second->GetDesc();
+    std::cout << s << "\n";
+  }
+  std::cout << std::endl;
+}
 
 void CommandRegistry::RegisterCommand(Command& cmd) {
   m_commands[cmd.GetName()] = &cmd;
 }
 
-void CommandRegistry::RegisterOption(GlobalArgument& arg) {
-  if (arg.HasShortKey()) {
-    m_options[arg.GetKeyName() + "|" + arg.GetShortkeyName()] = &arg;
-  } else {
-    m_options[arg.GetKeyName()] = &arg;
-  }
-}
-
 void CommandRegistry::Run(int argc, const char* argv[]) {
   ArgumentParser parser(argc, argv);  // Initialize parser
+
+  if (parser.HasGlobalKey("-h") || parser.HasGlobalKey("--help")) {
+    return m_Help(parser.GetAppName());
+  }
 
   if (parser.HasCommand()) {
     auto cit = m_commands.find(parser.GetCommandName());
     if (cit == m_commands.end()) throw CommandError::UnknownCommand(parser.GetCommandName());
+
+    // TODO: Check for "--help" command option and run Help if provided.
 
     // Populate command arguments
     for (auto& a : cit->second->GetArgs()) {
@@ -42,9 +59,8 @@ void CommandRegistry::Run(int argc, const char* argv[]) {
       }
     }
 
-    // Execute command
     cit->second->Exec();
   } else {
-    // UNDONE: Process global arguments
+    throw CommandError::CommandError("UsageError", "No command specified");
   }
 }

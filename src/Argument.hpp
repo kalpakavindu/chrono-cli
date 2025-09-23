@@ -70,11 +70,6 @@ namespace ChronoCLI {
     }
   };
 
-  class GlobalArgument : public Argument {
-   public:
-    GlobalArgument(const std::string& key, const std::string& shortkey, const std::string& description) : Argument(key, shortkey, false, description) {}
-  };
-
   class PositionalArgument : public Argument {
    private:
     std::string m_placeholder;
@@ -83,14 +78,6 @@ namespace ChronoCLI {
     PositionalArgument(const std::string& placeholder, bool required, const std::string& description) : Argument("", "", required, description), m_placeholder(placeholder) {}
 
     std::string GetKeyName() const { return "<" + m_placeholder + ">"; }
-  };
-
-  class Flag : public Argument {
-   public:
-    Flag(const std::string& key, const std::string& shortkey, bool required, const std::string& description) : Argument(key, shortkey, required, description) {}
-
-    void Set() { m_value = "1"; }
-    bool Get() { return m_value == "1"; }
   };
 
 }  // namespace ChronoCLI

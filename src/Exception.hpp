@@ -35,33 +35,33 @@ namespace ChronoCLI {
 
     class UnknownOption : public CommandError {
      public:
-      UnknownOption(const std::string& option) : CommandError("Unknown Option", "The option '" + option + "' is not recognized") {}
+      UnknownOption(const std::string& option) : CommandError("UnknownOption", "The option '" + option + "' is not recognized") {}
     };
 
     class UnknownCommand : public CommandError {
      public:
-      UnknownCommand(const std::string& command) : CommandError("Unknown Command", "The command '" + command + "' is not recognized") {}
+      UnknownCommand(const std::string& command) : CommandError("UnknownCommand", "The command '" + command + "' is not recognized") {}
     };
 
     class InvalidOption : public CommandError {
      public:
-      InvalidOption(const std::string& option) : CommandError("Invalid Option", "The option '" + option + "' is invalid") {}
+      InvalidOption(const std::string& option) : CommandError("InvalidOption", "The option '" + option + "' is invalid") {}
     };
 
     class InvalidArgument : public CommandError {
      public:
       InvalidArgument(const std::string& argument, const std::string& reason)
-          : CommandError("Invalid Argument", "Argument '" + argument + "' is invalid: " + reason) {}
+          : CommandError("InvalidArgument", "Argument '" + argument + "' is invalid: " + reason) {}
     };
 
     class MissingArgument : public CommandError {
      public:
-      MissingArgument(const std::string& argument) : CommandError("Missing Argument", "Required argument '" + argument + "' is missing") {}
+      MissingArgument(const std::string& argument) : CommandError("MissingArgument", "Required argument '" + argument + "' is missing") {}
     };
 
     class TooManyArguments : public CommandError {
      public:
-      TooManyArguments() : CommandError("Too Many Arguments", "Too many arguments provided") {}
+      TooManyArguments() : CommandError("TooManyArguments", "Too many arguments provided") {}
     };
 
   }  // namespace CommandError
@@ -70,7 +70,7 @@ namespace ChronoCLI {
 
     class ParserError : public Exception {
      public:
-      ParserError(const std::string& message) : Exception("Parser Error", message) {}
+      ParserError(const std::string& message) : Exception("ParserError", message) {}
 
       void print() const override;
     };

@@ -24,10 +24,6 @@ class MyCommand : public Command {
     std::cout << arg2.GetKeyName() << ": " << arg2.Get<std::string>() << "\n";
     std::cout << arg3.GetKeyName() << ": " << arg3.Get<std::string>() << std::endl;
   }
-
-  void Help() override {
-    std::cout << "This is a help message for test command." << std::endl;
-  }
 };
 
 int main(int argc, const char* argv[]) {

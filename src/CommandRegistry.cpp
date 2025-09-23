@@ -8,8 +8,8 @@ using namespace ChronoCLI;
 
 void CommandRegistry::m_Help(const std::string& appname) const {
   std::cout << "Usage:\n";
-  std::cout << "  " << appname << " [COMMAND] [OPTIONS] <ARGUMENTS>";
-  std::cout << "\n\nAvailable commands:\n";
+  std::cout << "  " << appname << " [COMMAND] [OPTIONS] <ARGUMENTS>\n";
+  std::cout << "\nAvailable commands:\n";
   for (auto& it : m_commands) {
     std::string s = "  " + it.first;
     int i = s.size();
@@ -20,6 +20,8 @@ void CommandRegistry::m_Help(const std::string& appname) const {
     s += it.second->GetDesc();
     std::cout << s << "\n";
   }
+
+  std::cout << "\nUse --help, -h option for get this message or use it with commands to get command help.";
   std::cout << std::endl;
 }
 
@@ -28,6 +30,8 @@ void CommandRegistry::RegisterCommand(Command& cmd) {
 }
 
 void CommandRegistry::Run(int argc, const char* argv[]) {
+  if (m_commands.size() == 0) throw Exception("No commands were registered");
+
   ArgumentParser parser(argc, argv);  // Initialize parser
 
   if (parser.HasGlobalKey("-h") || parser.HasGlobalKey("--help")) {
@@ -39,7 +43,7 @@ void CommandRegistry::Run(int argc, const char* argv[]) {
     if (cit == m_commands.end()) throw CommandError::UnknownCommand(parser.GetCommandName());
 
     if (parser.HasKey("-h") || parser.HasKey("--help")) {
-      return cit->second->Help();
+      return cit->second->Help(parser.GetAppName());
     }
 
     // Populate command arguments

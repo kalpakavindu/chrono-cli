@@ -33,6 +33,7 @@ namespace ChronoCLI {
 
     std::string GetKeyName() const;
     std::string GetShortkeyName() const;
+    std::string GetDescription() const { return m_description; }
 
     void Set(const std::string& value) { m_value = value; }
     bool IsSet() const { return !m_value.empty(); }

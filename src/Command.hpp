@@ -27,8 +27,9 @@ namespace ChronoCLI {
     const std::map<std::string, Argument*>& GetArgs() { return m_args; }
     const std::vector<PositionalArgument*>& GetPositionalArgs() { return m_positionals; }
 
+    virtual void Help(const std::string& appname) const;
+
     virtual void Exec() = 0;
-    virtual void Help() = 0;
   };
 
 }  // namespace ChronoCLI

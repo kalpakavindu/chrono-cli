@@ -38,7 +38,9 @@ void CommandRegistry::Run(int argc, const char* argv[]) {
     auto cit = m_commands.find(parser.GetCommandName());
     if (cit == m_commands.end()) throw CommandError::UnknownCommand(parser.GetCommandName());
 
-    // TODO: Check for "--help" command option and run Help if provided.
+    if (parser.HasKey("-h") || parser.HasKey("--help")) {
+      return cit->second->Help();
+    }
 
     // Populate command arguments
     for (auto& a : cit->second->GetArgs()) {

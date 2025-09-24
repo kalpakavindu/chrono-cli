@@ -14,11 +14,11 @@ Argument::Argument(const std::string& key, const std::string& shortkey, bool req
   if (!shortkey.empty()) m_shortkey = shortkey;
 }
 
-std::string Argument::GetKeyName() const {
+std::string Argument::getKeyName() const {
   return "--" + m_key;
 }
 
-std::string Argument::GetShortkeyName() const {
+std::string Argument::getShortkeyName() const {
   if (m_shortkey.has_value()) {
     return "-" + m_shortkey.value();
   }

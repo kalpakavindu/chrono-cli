@@ -7,7 +7,7 @@ using namespace ChronoCLI;
 
 class MyCommand : public Command {
  private:
-  Argument arg1 = Argument("arg1", "a1", false, "Test argument 1");
+  Argument arg1 = Argument("arg1", "", false, "Test argument 1");
   Argument arg2 = Argument("arg2", "a2", true, "Test argument 2");
   PositionalArgument arg3 = PositionalArgument("test_name", true, "Test name for the argument");
 
@@ -20,9 +20,9 @@ class MyCommand : public Command {
 
   void Exec() override {
     std::cout << "Command completed:" << "\n";
-    std::cout << arg1.GetKeyName() << ": " << arg1.Get<std::string>() << "\n";
-    std::cout << arg2.GetKeyName() << ": " << arg2.Get<std::string>() << "\n";
-    std::cout << arg3.GetKeyName() << ": " << arg3.Get<std::string>() << std::endl;
+    std::cout << arg1.getKeyName() << ": " << arg1.getValue<std::string>() << "\n";
+    std::cout << arg2.getKeyName() << ": " << arg2.getValue<std::string>() << "\n";
+    std::cout << arg3.getKeyName() << ": " << arg3.getValue<std::string>() << std::endl;
   }
 };
 

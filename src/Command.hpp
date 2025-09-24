@@ -22,10 +22,10 @@ namespace ChronoCLI {
 
    public:
     Command(const std::string& name, const std::string& description) : m_name(name), m_description(description) {}
-    const std::string& GetName() const { return m_name; }
-    const std::string& GetDesc() const { return m_description; }
-    const std::map<std::string, Argument*>& GetArgs() { return m_args; }
-    const std::vector<PositionalArgument*>& GetPositionalArgs() { return m_positionals; }
+    const std::string& getName() const { return m_name; }
+    const std::string& getDesc() const { return m_description; }
+    const std::map<std::string, Argument*>& getArgs() { return m_args; }
+    const std::vector<PositionalArgument*>& getPositionalArgs() { return m_positionals; }
 
     virtual void Help(const std::string& appname) const;
 

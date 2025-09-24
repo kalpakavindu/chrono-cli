@@ -31,28 +31,28 @@ namespace ChronoCLI {
    public:
     Argument(const std::string& key, const std::string& shortkey, bool required, const std ::string& description);
 
-    std::string GetKeyName() const;
-    std::string GetShortkeyName() const;
-    std::string GetDescription() const { return m_description; }
+    std::string getKeyName() const;
+    std::string getShortkeyName() const;
+    std::string getDescription() const { return m_description; }
 
-    void Set(const std::string& value) { m_value = value; }
-    bool IsSet() const { return !m_value.empty(); }
-    bool IsRequired() const { return m_isRequired; }
-    bool HasShortKey() const { return m_shortkey.has_value(); }
+    void set(const std::string& value) { m_value = value; }
+    bool isSet() const { return !m_value.empty(); }
+    bool isRequired() const { return m_isRequired; }
+    bool hasShortKey() const { return m_shortkey.has_value(); }
 
     template <typename T>
-    T Get() {
+    T getValue() {
       if (m_value.empty()) {
-        if (m_isRequired) throw CommandError::MissingArgument(GetKeyName() + "|" + GetShortkeyName());
+        if (m_isRequired) throw CommandError::MissingArgument(getKeyName());
         return m_convert<T>("");
       }
       return m_convert<T>(m_value);
     }
 
     template <typename T>
-    std::list<T> GetList(const std::string& delim) {
+    std::list<T> getList(const std::string& delim) {
       if (m_value.empty()) {
-        if (m_isRequired) throw CommandError::MissingArgument(GetKeyName() + "|" + GetShortkeyName());
+        if (m_isRequired) throw CommandError::MissingArgument(getKeyName());
         return m_convert<T>("");
       }
 
@@ -78,7 +78,7 @@ namespace ChronoCLI {
    public:
     PositionalArgument(const std::string& placeholder, bool required, const std::string& description) : Argument("", "", required, description), m_placeholder(placeholder) {}
 
-    std::string GetKeyName() const { return "<" + m_placeholder + ">"; }
+    std::string getKeyName() const { return "<" + m_placeholder + ">"; }
   };
 
 }  // namespace ChronoCLI

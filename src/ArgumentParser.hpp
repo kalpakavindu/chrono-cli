@@ -26,21 +26,21 @@ namespace ChronoCLI {
    public:
     ArgumentParser(int argc, const char* argv[]);
 
-    bool HasKey(const std::string& key) const;
-    bool HasGlobalKey(const std::string& key) const;
-    bool HasCommand() const;
-    const std::string GetCommandName() const;
+    bool hasKey(const std::string& key) const;
+    bool hasGlobalKey(const std::string& key) const;
+    bool hasCommand() const;
+    const std::string getCommandName() const;
 
-    std::string GetValue(const std::string& key) {
+    std::string getValue(const std::string& key) {
       return m_get(key, false);
     }
 
-    std::string GetGlobalValue(const std::string& key) {
+    std::string getGlobalValue(const std::string& key) {
       return m_get(key, true);
     }
 
-    const std::string GetAppName() const { return m_appName; }
-    const std::vector<std::string> GetPositionalArgs() const { return m_positionalArgs; }
+    const std::string getAppName() const { return m_appName; }
+    const std::vector<std::string>& getPositionalArgs() const { return m_positionalArgs; }
   };
 
 }  // namespace ChronoCLI

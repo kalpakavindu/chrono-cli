@@ -5,10 +5,10 @@
 using namespace ChronoCLI;
 
 void Command::RegisterArgument(Argument& arg) {
-  if (arg.HasShortKey()) {
-    m_args[arg.GetKeyName() + "|" + arg.GetShortkeyName()] = &arg;
+  if (arg.hasShortKey()) {
+    m_args[arg.getKeyName() + "|" + arg.getShortkeyName()] = &arg;
   } else {
-    m_args[arg.GetKeyName()] = &arg;
+    m_args[arg.getKeyName()] = &arg;
   }
 }
 
@@ -24,14 +24,19 @@ void Command::Help(const std::string& appname) const {
     std::cout << "\nAvailable options:\n";
 
     for (auto& it : m_args) {
-      std::string s = "  " + it.second->GetKeyName() + ", " + it.second->GetShortkeyName();
+      std::string s = "  " + it.second->getKeyName();
+
+      if (it.second->hasShortKey()) {
+        s += ", " + it.second->getShortkeyName();
+      }
+
       int i = s.size();
       while (i < 20) {
         s += " ";
         ++i;
       }
-      s += it.second->IsRequired() ? " *  " : "    ";
-      s += it.second->GetDescription();
+      s += it.second->isRequired() ? " *  " : "    ";
+      s += it.second->getDescription();
       std::cout << s << "\n";
     }
   }
@@ -40,14 +45,14 @@ void Command::Help(const std::string& appname) const {
     std::cout << "\nPositional arguments:\n";
 
     for (auto& it : m_positionals) {
-      std::string s = "  " + it->GetKeyName();
+      std::string s = "  " + it->getKeyName();
       int i = s.size();
       while (i < 20) {
         s += " ";
         ++i;
       }
-      s += it->IsRequired() ? " *  " : "    ";
-      s += it->GetDescription();
+      s += it->isRequired() ? " *  " : "    ";
+      s += it->getDescription();
       std::cout << s << "\n";
     }
   }

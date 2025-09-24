@@ -72,7 +72,7 @@ ArgumentParser::ArgumentParser(int argc, const char* argv[]) {
   }
 }
 
-bool ArgumentParser::HasKey(const std::string& key) const {
+bool ArgumentParser::hasKey(const std::string& key) const {
   size_t skpos = key.find("|");
   if (skpos != std::string::npos) {
     return (m_args.find(key.substr(0, skpos)) != m_args.end()) || (m_args.find(key.substr(skpos + 1)) != m_args.end());
@@ -80,7 +80,7 @@ bool ArgumentParser::HasKey(const std::string& key) const {
   return m_args.find(key) != m_args.end();
 }
 
-bool ArgumentParser::HasGlobalKey(const std::string& key) const {
+bool ArgumentParser::hasGlobalKey(const std::string& key) const {
   size_t skpos = key.find("|");
   if (skpos != std::string::npos) {
     return (m_globalArgs.find(key.substr(0, skpos)) != m_globalArgs.end()) || (m_globalArgs.find(key.substr(skpos + 1)) != m_globalArgs.end());
@@ -88,11 +88,11 @@ bool ArgumentParser::HasGlobalKey(const std::string& key) const {
   return m_globalArgs.find(key) != m_globalArgs.end();
 }
 
-bool ArgumentParser::HasCommand() const {
+bool ArgumentParser::hasCommand() const {
   return m_commandName.has_value();
 }
 
-const std::string ArgumentParser::GetCommandName() const {
+const std::string ArgumentParser::getCommandName() const {
   if (m_commandName.has_value()) return m_commandName.value();
   return "";
 }

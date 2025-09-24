@@ -17,7 +17,7 @@ void CommandRegistry::m_Help(const std::string& appname) const {
       s += " ";
       ++i;
     }
-    s += it.second->GetDesc();
+    s += it.second->getDesc();
     std::cout << s << "\n";
   }
 
@@ -26,7 +26,7 @@ void CommandRegistry::m_Help(const std::string& appname) const {
 }
 
 void CommandRegistry::RegisterCommand(Command& cmd) {
-  m_commands[cmd.GetName()] = &cmd;
+  m_commands[cmd.getName()] = &cmd;
 }
 
 void CommandRegistry::Run(int argc, const char* argv[]) {
@@ -34,34 +34,34 @@ void CommandRegistry::Run(int argc, const char* argv[]) {
 
   ArgumentParser parser(argc, argv);  // Initialize parser
 
-  if (parser.HasGlobalKey("-h") || parser.HasGlobalKey("--help")) {
-    return m_Help(parser.GetAppName());
+  if (parser.hasGlobalKey("-h") || parser.hasGlobalKey("--help")) {
+    return m_Help(parser.getAppName());
   }
 
-  if (parser.HasCommand()) {
-    auto cit = m_commands.find(parser.GetCommandName());
-    if (cit == m_commands.end()) throw CommandError::UnknownCommand(parser.GetCommandName());
+  if (parser.hasCommand()) {
+    auto cit = m_commands.find(parser.getCommandName());
+    if (cit == m_commands.end()) throw CommandError::UnknownCommand(parser.getCommandName());
 
-    if (parser.HasKey("-h") || parser.HasKey("--help")) {
-      return cit->second->Help(parser.GetAppName());
+    if (parser.hasKey("-h") || parser.hasKey("--help")) {
+      return cit->second->Help(parser.getAppName());
     }
 
     // Populate command arguments
-    for (auto& a : cit->second->GetArgs()) {
-      if (parser.HasKey(a.first)) {
-        a.second->Set(parser.GetValue(a.first));
+    for (auto& a : cit->second->getArgs()) {
+      if (parser.hasKey(a.first)) {
+        a.second->set(parser.getValue(a.first));
       } else {
-        if (a.second->IsRequired()) throw CommandError::MissingArgument(a.first);
+        if (a.second->isRequired()) throw CommandError::MissingArgument(a.first);
       }
     }
 
     // Populate positional arguments
-    auto& positionals = cit->second->GetPositionalArgs();
+    auto& positionals = cit->second->getPositionalArgs();
     for (int i = 0; i < positionals.size(); i++) {
-      if ((parser.GetPositionalArgs().size() > 0) && (positionals.size() <= parser.GetPositionalArgs().size())) {
-        positionals[i]->Set(parser.GetPositionalArgs()[i]);
+      if ((parser.getPositionalArgs().size() > 0) && (positionals.size() <= parser.getPositionalArgs().size())) {
+        positionals[i]->set(parser.getPositionalArgs()[i]);
       } else {
-        if (positionals[i]->IsRequired()) throw CommandError::MissingArgument(positionals[i]->GetKeyName());
+        if (positionals[i]->isRequired()) throw CommandError::MissingArgument(positionals[i]->getKeyName());
       }
     }
 

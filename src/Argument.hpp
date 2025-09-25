@@ -9,6 +9,11 @@
 
 namespace ChronoCLI {
 
+  /**
+   * @brief Represents a command line argument
+   *
+   * Supports type conversion to common types (string, int, double, float, bool)
+   */
   class Argument {
    private:
     template <typename T>
@@ -29,17 +34,58 @@ namespace ChronoCLI {
     std::string m_value;
 
    public:
+    /**
+     * @brief Construct a new Argument object
+     * @param key The argument key (e.g. --file)
+     * @param shortKey The short argument key (e.g. -f)
+     * @param required Whether the argument is required
+     * @param description A brief description of the argument
+     * @throws Exception if the key or shortkey are invalid
+     */
     Argument(const std::string& key, const std::string& shortkey, bool required, const std ::string& description);
 
+    /**
+     * @brief Get the argument key name (e.g. --file)
+     */
     std::string getKeyName() const;
-    std::string getShortkeyName() const;
-    std::string getDescription() const { return m_description; }
 
-    void set(const std::string& value) { m_value = value; }
+    /**
+     * @brief Get the argument shortkey name (e.g. -f)
+     */
+    std::string getShortkeyName() const;
+
+    /**
+     * @brief Get the argument description
+     */
+    std::string getDesc() const { return m_description; }
+
+    /**
+     * @brief Set the argument value
+     * @param value The argument value as a string
+     */
+    void setValue(const std::string& value) { m_value = value; }
+
+    /**
+     * @brief Check if the argument has a value
+     */
     bool isSet() const { return !m_value.empty(); }
+
+    /**
+     * @brief Check if the argument is required
+     */
     bool isRequired() const { return m_isRequired; }
+
+    /**
+     * @brief Check if the argument has a shortkey
+     */
     bool hasShortKey() const { return m_shortkey.has_value(); }
 
+    /**
+     * @brief Get the argument value converted to the specified type
+     * @tparam T The target type (string, int, double, float, bool)
+     * @throws CommandError::MissingArgument if the argument is required but not set
+     * @throws ParserError::TypeConvertError if the conversion fails
+     */
     template <typename T>
     T getValue() {
       if (m_value.empty()) {
@@ -49,6 +95,13 @@ namespace ChronoCLI {
       return m_convert<T>(m_value);
     }
 
+    /**
+     * @brief Get the argument value converted to a list of specified type
+     * @tparam T The target type (string, int, double, float, bool)
+     * @param delim The delimiter used to split the value into a list
+     * @throws CommandError::MissingArgument if the argument is required but not set
+     * @throws ParserError::TypeConvertError if the conversion fails
+     */
     template <typename T>
     std::list<T> getList(const std::string& delim) {
       if (m_value.empty()) {
@@ -71,13 +124,27 @@ namespace ChronoCLI {
     }
   };
 
+  /**
+   * @brief Represents a positional command line argument (e.g. <filename>)
+   *
+   * Inherits from Argument but does not use key or shortkey
+   */
   class PositionalArgument : public Argument {
    private:
     std::string m_placeholder;
 
    public:
+    /**
+     * @brief Construct a new PositionalArgument object
+     * @param placeholder The placeholder name (e.g. filename)
+     * @param required Whether the argument is required
+     * @param description A brief description of the argument
+     */
     PositionalArgument(const std::string& placeholder, bool required, const std::string& description) : Argument("", "", required, description), m_placeholder(placeholder) {}
 
+    /**
+     * @brief Get the argument key name (e.g. <filename>)
+     */
     std::string getKeyName() const { return "<" + m_placeholder + ">"; }
   };
 

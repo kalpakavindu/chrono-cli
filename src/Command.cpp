@@ -36,7 +36,7 @@ void Command::Help(const std::string& appname) const {
         ++i;
       }
       s += it.second->isRequired() ? " *  " : "    ";
-      s += it.second->getDescription();
+      s += it.second->getDesc();
       std::cout << s << "\n";
     }
   }
@@ -52,7 +52,7 @@ void Command::Help(const std::string& appname) const {
         ++i;
       }
       s += it->isRequired() ? " *  " : "    ";
-      s += it->getDescription();
+      s += it->getDesc();
       std::cout << s << "\n";
     }
   }

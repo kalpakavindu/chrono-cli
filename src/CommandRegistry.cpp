@@ -49,7 +49,7 @@ void CommandRegistry::Run(int argc, const char* argv[]) {
     // Populate command arguments
     for (auto& a : cit->second->getArgs()) {
       if (parser.hasKey(a.first)) {
-        a.second->set(parser.getValue(a.first));
+        a.second->setValue(parser.getValue(a.first));
       } else {
         if (a.second->isRequired()) throw CommandError::MissingArgument(a.first);
       }
@@ -59,7 +59,7 @@ void CommandRegistry::Run(int argc, const char* argv[]) {
     auto& positionals = cit->second->getPositionalArgs();
     for (int i = 0; i < positionals.size(); i++) {
       if ((parser.getPositionalArgs().size() > 0) && (positionals.size() <= parser.getPositionalArgs().size())) {
-        positionals[i]->set(parser.getPositionalArgs()[i]);
+        positionals[i]->setValue(parser.getPositionalArgs()[i]);
       } else {
         if (positionals[i]->isRequired()) throw CommandError::MissingArgument(positionals[i]->getKeyName());
       }

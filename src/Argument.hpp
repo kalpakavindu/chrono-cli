@@ -9,143 +9,133 @@
 
 namespace ChronoCLI {
 
-  /**
-   * @brief Represents a command line argument
-   *
-   * Supports type conversion to common types (string, int, double, float, bool)
-   */
-  class Argument {
-   private:
+  class ArgumentBase {
+   protected:
+    std::string m_key;
+    std::string m_description;
+    bool m_isRequired = false;
+
+   public:
+    ArgumentBase(const std::string& key, const std::string& description, bool required = false) : m_key(key), m_description(description), m_isRequired(required) {}
+    virtual ~ArgumentBase() = default;
+
+    virtual std::string getKey() const;
+    virtual std::string getDesc() const;
+    bool isRequired() const;
+  };
+
+  class ShortKeyBase {
+   protected:
+    std::optional<std::string> m_shortkey;
+
+   public:
+    ShortKeyBase(const std::string& shortkey);
+
+    std::optional<std::string> getShortKey() const;
+  };
+
+  class PlaceholderBase {
+   protected:
+    std::optional<std::string> m_placeholder;
+
+   public:
+    PlaceholderBase(const std::string& placeholder);
+    std::optional<std::string> getPlaceholder() const;
+  };
+
+  class ValuedBase {
+   protected:
+    std::optional<std::string> m_value;
+
+    void m_setValue(const std::string& data);
+
     template <typename T>
-    const T m_convert(const std::string& value) {
+    T m_convert(const std::string& value) {
       if constexpr (std::is_same_v<T, std::string>) return value;
       if constexpr (std::is_same_v<T, int>) return std::stoi(value);
       if constexpr (std::is_same_v<T, double>) return std::stod(value);
       if constexpr (std::is_same_v<T, float>) return std::stof(value);
-      if constexpr (std::is_same_v<T, bool>) return value == "true" || value == "1";
+      if constexpr (std::is_same_v<T, bool>) return value != "" || value != "false" || value != "0";
       throw ParserError::TypeConvertError(value, typeid(T).name());
     }
 
-   protected:
-    std::string m_key;
-    std::string m_description;
-    std::optional<std::string> m_shortkey;
-    bool m_isRequired;
-    std::string m_value;
-
    public:
-    /**
-     * @brief Construct a new Argument object
-     * @param key The argument key (e.g. --file)
-     * @param shortKey The short argument key (e.g. -f)
-     * @param required Whether the argument is required
-     * @param description A brief description of the argument
-     * @throws Exception if the key or shortkey are invalid
-     */
-    Argument(const std::string& key, const std::string& shortkey, bool required, const std ::string& description);
+    bool hasValue() const;
 
-    /**
-     * @brief Get the argument key name (e.g. --file)
-     */
-    std::string getKeyName() const;
-
-    /**
-     * @brief Get the argument shortkey name (e.g. -f)
-     */
-    std::string getShortkeyName() const;
-
-    /**
-     * @brief Get the argument description
-     */
-    std::string getDesc() const { return m_description; }
-
-    /**
-     * @brief Set the argument value
-     * @param value The argument value as a string
-     */
-    void setValue(const std::string& value) { m_value = value; }
-
-    /**
-     * @brief Check if the argument has a value
-     */
-    bool isSet() const { return !m_value.empty(); }
-
-    /**
-     * @brief Check if the argument is required
-     */
-    bool isRequired() const { return m_isRequired; }
-
-    /**
-     * @brief Check if the argument has a shortkey
-     */
-    bool hasShortKey() const { return m_shortkey.has_value(); }
-
-    /**
-     * @brief Get the argument value converted to the specified type
-     * @tparam T The target type (string, int, double, float, bool)
-     * @throws CommandError::MissingArgument if the argument is required but not set
-     * @throws ParserError::TypeConvertError if the conversion fails
-     */
     template <typename T>
     T getValue() {
-      if (m_value.empty()) {
-        if (m_isRequired) throw CommandError::MissingArgument(getKeyName());
-        return m_convert<T>("");
-      }
-      return m_convert<T>(m_value);
+      if (!hasValue()) return m_convert<T>("");
+      return m_convert<T>(m_value.value());
     }
 
-    /**
-     * @brief Get the argument value converted to a list of specified type
-     * @tparam T The target type (string, int, double, float, bool)
-     * @param delim The delimiter used to split the value into a list
-     * @throws CommandError::MissingArgument if the argument is required but not set
-     * @throws ParserError::TypeConvertError if the conversion fails
-     */
     template <typename T>
     std::list<T> getList(const std::string& delim) {
-      if (m_value.empty()) {
-        if (m_isRequired) throw CommandError::MissingArgument(getKeyName());
-        return m_convert<T>("");
+      std::list<T> temp;
+      if (!hasValue()) return temp;
+      std::string v = m_value.value();
+      size_t dPos = v.find(delim);
+
+      while (dPos != std::string::npos) {
+        temp.push_back(m_convert<T>(v.substr(0, dPos)));
+        v.erase(0, dPos + delim.length());
+        dPos = v.find(delim);
       }
 
-      std::list<T> l;
-      std::string v = m_value;  // Make a copy so that the original value never edited
-      size_t pos = v.find(delim);
-
-      while (pos != std::string::npos) {
-        std::string token = v.substr(0, pos);
-        l.push_back(m_convert<T>(token));
-        v.erase(0, pos + delim.length());
-        pos = v.find(delim);
-      }
-      l.push_back(m_convert<T>(v));  // Append last element
-      return l;
+      return temp;
     }
   };
 
-  /**
-   * @brief Represents a positional command line argument (e.g. <filename>)
-   *
-   * Inherits from Argument but does not use key or shortkey
-   */
-  class PositionalArgument : public Argument {
+  class FlagArgument : public ArgumentBase, public ShortKeyBase {
    private:
-    std::string m_placeholder;
+    bool m_isset = false;
 
    public:
-    /**
-     * @brief Construct a new PositionalArgument object
-     * @param placeholder The placeholder name (e.g. filename)
-     * @param required Whether the argument is required
-     * @param description A brief description of the argument
-     */
-    PositionalArgument(const std::string& placeholder, bool required, const std::string& description) : Argument("", "", required, description), m_placeholder(placeholder) {}
+    FlagArgument(
+        const std::string& key,
+        const std::string& description,
+        const std::string& shortkey = "",
+        bool required = false) : ArgumentBase(key, description, required),
+                                 ShortKeyBase(shortkey) {}
 
-    /**
-     * @brief Get the argument key name (e.g. <filename>)
-     */
-    std::string getKeyName() const { return "<" + m_placeholder + ">"; }
+    static FlagArgument Required(const std::string& key, const std::string& description, const std::string& shortkey = "") {
+      return FlagArgument(key, description, shortkey, true);
+    }
+
+    std::string getKey() const override;
+    void setFlag();
+    bool isSet() const;
+  };
+
+  class PositionalArgument : public ArgumentBase, public ValuedBase, public PlaceholderBase {
+   public:
+    PositionalArgument(
+        const std::string& key,
+        const std::string& description,
+        const std::string& placeholder = "",
+        bool required = false) : ArgumentBase(key, description, required),
+                                 PlaceholderBase(placeholder) {}
+
+    static PositionalArgument Required(const std::string& key, const std::string& description, const std::string& placeholder = "") {
+      return PositionalArgument(key, description, placeholder, true);
+    }
+  };
+
+  class KeywordArgument : public ArgumentBase, public ValuedBase, public ShortKeyBase, public PlaceholderBase {
+   public:
+    KeywordArgument(
+        const std::string& key,
+        const std::string& description,
+        const std::string& shortkey = "",
+        const std::string& placeholder = "",
+        bool required = false) : ArgumentBase(key, description, required),
+                                 ShortKeyBase(shortkey),
+                                 PlaceholderBase(placeholder) {}
+
+    static KeywordArgument Required(const std::string& key, const std::string& description, const std::string& shortkey = "", const std::string& placeholder = "") {
+      return KeywordArgument(key, description, shortkey, placeholder, true);
+    }
+
+    std::string getKey() const override;
   };
 
 }  // namespace ChronoCLI

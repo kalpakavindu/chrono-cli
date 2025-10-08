@@ -19,7 +19,7 @@ namespace ChronoCLI {
     mutable std::string full_message;
 
    public:
-    explicit Exception(const std::string& message) : error_message(message), error_type("Runtime Error") {}
+    explicit Exception(const std::string& message) : error_message(message), error_type("UnexpectedError") {}
 
     /**
      * @brief Construct a new Exception object

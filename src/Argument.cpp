@@ -2,25 +2,96 @@
 
 using namespace ChronoCLI;
 
-Argument::Argument(const std::string& key, const std::string& shortkey, bool required, const std ::string& description) : m_description(description), m_isRequired(required) {
-  if ((key.substr(0, 1) == "-") || (key.substr(0, 1) == "_")) throw Exception("Invalid value for argument key");
-  if (key == "help") throw Exception("Cannot use 'help' as a key for custom arguments");
-  if (key.size() == 1) throw Exception("Minimum 2 characters required for argument key");
-  m_key = key;
+// Class: ArgumentBase
 
-  if ((shortkey.substr(0, 1) == "-") || (shortkey.substr(0, 1) == "_")) throw Exception("Invalid value for argument short key");
-  if (shortkey == "h") throw Exception("Cannot use 'h' as a short key for custom arguments");
-  if (shortkey.size() > 3) throw Exception("Maximum 3 character string considered as a short key");
-  if (!shortkey.empty()) m_shortkey = shortkey;
+std::string ArgumentBase::getKey() const {
+  return m_key;
 }
 
-std::string Argument::getKeyName() const {
+std::string ArgumentBase::getDesc() const {
+  return m_description;
+}
+
+bool ArgumentBase::isRequired() const {
+  return m_isRequired;
+}
+
+// --------------------------
+
+// Class: ShortKeyBase
+
+ShortKeyBase::ShortKeyBase(const std::string& shortkey) {
+  if (shortkey == "") return;
+  if (shortkey.size() > 4) throw Exception("ArgDefError", "Maximum 4 characters allowed for shortkeys");
+  if (m_shortkey.has_value()) throw Exception("ArgDefError", "Shortkeys can not be redefined");
+  m_shortkey = shortkey;
+}
+
+std::optional<std::string> ShortKeyBase::getShortKey() const {
+  std::optional<std::string> temp;
+  if (m_shortkey.has_value()) {
+    temp = "-" + m_shortkey.value();
+  }
+  return temp;
+}
+
+// --------------------------
+
+// Class: PlaceholderBase
+
+PlaceholderBase::PlaceholderBase(const std::string& placeholder) {
+  if (placeholder == "") return;
+  if (placeholder.size() > 12) throw Exception("ArgDefError", "Maximum 12 characters allowed for placeholders");
+  if (m_placeholder.has_value()) throw Exception("ArgDefError", "Placeholders can not be redefined");
+  m_placeholder = placeholder;
+}
+
+std::optional<std::string> PlaceholderBase::getPlaceholder() const {
+  std::optional<std::string> temp;
+  if (m_placeholder.has_value()) {
+    temp = "<" + m_placeholder.value() + ">";
+  }
+  return temp;
+}
+
+// --------------------------
+
+// Class: ValuedBase
+
+void ValuedBase::m_setValue(const std::string& data) {
+  m_value = data;
+}
+
+bool ValuedBase::hasValue() const {
+  return m_value.has_value();
+}
+
+// --------------------------
+
+// Class: FlagArgument
+
+std::string FlagArgument::getKey() const {
   return "--" + m_key;
 }
 
-std::string Argument::getShortkeyName() const {
-  if (m_shortkey.has_value()) {
-    return "-" + m_shortkey.value();
-  }
-  return "";
+void FlagArgument::setFlag() {
+  m_isset = true;
 }
+
+bool FlagArgument::isSet() const {
+  return m_isset;
+}
+
+// --------------------------
+
+// Class: KeywordArgument
+
+std::string KeywordArgument::getKey() const {
+  return "--" + m_key;
+}
+
+// --------------------------
+
+// Class: PositionalArgument
+
+// --------------------------

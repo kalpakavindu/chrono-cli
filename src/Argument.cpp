@@ -27,12 +27,15 @@ ShortKeyBase::ShortKeyBase(const std::string& shortkey) {
   m_shortkey = shortkey;
 }
 
-std::optional<std::string> ShortKeyBase::getShortKey() const {
-  std::optional<std::string> temp;
+std::string ShortKeyBase::getShortKey() const {
   if (m_shortkey.has_value()) {
-    temp = "-" + m_shortkey.value();
+    return "-" + m_shortkey.value();
   }
-  return temp;
+  return "";
+}
+
+bool ShortKeyBase::hasShortKey() const {
+  return m_shortkey.has_value();
 }
 
 // --------------------------
@@ -46,12 +49,15 @@ PlaceholderBase::PlaceholderBase(const std::string& placeholder) {
   m_placeholder = placeholder;
 }
 
-std::optional<std::string> PlaceholderBase::getPlaceholder() const {
-  std::optional<std::string> temp;
+std::string PlaceholderBase::getPlaceholder() const {
   if (m_placeholder.has_value()) {
-    temp = "<" + m_placeholder.value() + ">";
+    return "<" + m_placeholder.value() + ">";
   }
-  return temp;
+  return "";
+}
+
+bool PlaceholderBase::hasPlaceholder() const {
+  return m_placeholder.has_value();
 }
 
 // --------------------------

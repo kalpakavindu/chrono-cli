@@ -3,6 +3,7 @@
 #define CHRONOCLI_ARGUMENT_HPP
 
 #include <list>
+#include <memory>
 #include <optional>
 
 #include "Exception.hpp"
@@ -17,11 +18,12 @@ namespace ChronoCLI {
 
    public:
     ArgumentBase(const std::string& key, const std::string& description, bool required = false) : m_key(key), m_description(description), m_isRequired(required) {}
-    virtual ~ArgumentBase() = default;
 
     virtual std::string getKey() const;
     virtual std::string getDesc() const;
     bool isRequired() const;
+
+    virtual ~ArgumentBase() = default;
   };
 
   class ShortKeyBase {
@@ -30,8 +32,8 @@ namespace ChronoCLI {
 
    public:
     ShortKeyBase(const std::string& shortkey);
-
-    std::optional<std::string> getShortKey() const;
+    std::string getShortKey() const;
+    bool hasShortKey() const;
   };
 
   class PlaceholderBase {
@@ -40,7 +42,8 @@ namespace ChronoCLI {
 
    public:
     PlaceholderBase(const std::string& placeholder);
-    std::optional<std::string> getPlaceholder() const;
+    std::string getPlaceholder() const;
+    bool hasPlaceholder() const;
   };
 
   class ValuedBase {
@@ -89,7 +92,6 @@ namespace ChronoCLI {
    private:
     bool m_isset = false;
 
-   public:
     FlagArgument(
         const std::string& key,
         const std::string& description,
@@ -97,8 +99,13 @@ namespace ChronoCLI {
         bool required = false) : ArgumentBase(key, description, required),
                                  ShortKeyBase(shortkey) {}
 
-    static FlagArgument Required(const std::string& key, const std::string& description, const std::string& shortkey = "") {
-      return FlagArgument(key, description, shortkey, true);
+   public:
+    static std::shared_ptr<FlagArgument> Optional(const std::string& key, const std::string& description, const std::string& shortkey = "") {
+      return std::make_shared<FlagArgument>(key, description, shortkey, false);
+    }
+
+    static std::shared_ptr<FlagArgument> Required(const std::string& key, const std::string& description, const std::string& shortkey = "") {
+      return std::make_shared<FlagArgument>(key, description, shortkey, true);
     }
 
     std::string getKey() const override;
@@ -107,7 +114,7 @@ namespace ChronoCLI {
   };
 
   class PositionalArgument : public ArgumentBase, public ValuedBase, public PlaceholderBase {
-   public:
+   private:
     PositionalArgument(
         const std::string& key,
         const std::string& description,
@@ -115,13 +122,18 @@ namespace ChronoCLI {
         bool required = false) : ArgumentBase(key, description, required),
                                  PlaceholderBase(placeholder) {}
 
-    static PositionalArgument Required(const std::string& key, const std::string& description, const std::string& placeholder = "") {
-      return PositionalArgument(key, description, placeholder, true);
+   public:
+    static std::unique_ptr<PositionalArgument> Optional(const std::string& key, const std::string& description, const std::string& placeholder = "") {
+      return std::make_unique<PositionalArgument>(key, description, placeholder, false);
+    }
+
+    static std::unique_ptr<PositionalArgument> Required(const std::string& key, const std::string& description, const std::string& placeholder = "") {
+      return std::make_unique<PositionalArgument>(key, description, placeholder, true);
     }
   };
 
   class KeywordArgument : public ArgumentBase, public ValuedBase, public ShortKeyBase, public PlaceholderBase {
-   public:
+   private:
     KeywordArgument(
         const std::string& key,
         const std::string& description,
@@ -131,8 +143,13 @@ namespace ChronoCLI {
                                  ShortKeyBase(shortkey),
                                  PlaceholderBase(placeholder) {}
 
-    static KeywordArgument Required(const std::string& key, const std::string& description, const std::string& shortkey = "", const std::string& placeholder = "") {
-      return KeywordArgument(key, description, shortkey, placeholder, true);
+   public:
+    static std::shared_ptr<KeywordArgument> Optional(const std::string& key, const std::string& description, const std::string& shortkey = "", const std::string& placeholder = "") {
+      return std::make_shared<KeywordArgument>(key, description, shortkey, placeholder, false);
+    }
+
+    static std::shared_ptr<KeywordArgument> Required(const std::string& key, const std::string& description, const std::string& shortkey = "", const std::string& placeholder = "") {
+      return std::make_shared<KeywordArgument>(key, description, shortkey, placeholder, true);
     }
 
     std::string getKey() const override;

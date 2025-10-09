@@ -9,73 +9,29 @@
 
 namespace ChronoCLI {
 
-  /**
-   * @brief Represents a command with its arguments and execution logic
-   *
-   * This is a base class that you should inherit to create your own commands.
-   */
   class Command {
    private:
-    std::map<std::string, Argument*> m_args;
-    std::vector<PositionalArgument*> m_positionals;
     std::string m_name;
-    std::string m_description;
+    std::string m_desc;
 
-   protected:
-    /**
-     * @brief Register a new argument with the command
-     * @param arg The argument to register
-     */
-    void RegisterArgument(Argument& arg);
-
-    /**
-     * @brief Register a new positional argument with the command
-     * @param arg The positional argument to register
-     */
-    void RegisterArgument(PositionalArgument& arg);
+    std::map<std::string, std::shared_ptr<FlagArgument>> m_flgArgMap;
+    std::map<std::string, std::shared_ptr<KeywordArgument>> m_keyArgMap;
+    std::vector<std::unique_ptr<PositionalArgument>> m_posArgVec;
 
    public:
-    /**
-     * @brief Construct a new Command object
-     * @param name The name of the command
-     * @param description A brief description of the command
-     */
-    Command(const std::string& name, const std::string& description) : m_name(name), m_description(description) {}
+    Command(const std::string& name, const std::string& description) : m_name(name), m_desc(description) {}
 
-    /**
-     * @brief Get the command name
-     */
-    const std::string& getName() const { return m_name; }
+    std::string getName();
+    std::string getDesc();
 
-    /**
-     * @brief Get the command description
-     */
-    const std::string& getDesc() const { return m_description; }
+    void RegisterArgument(std::shared_ptr<FlagArgument> arg);
+    void RegisterArgument(std::shared_ptr<KeywordArgument> arg);
+    void RegisterArgument(std::unique_ptr<PositionalArgument> arg);
 
-    /**
-     * @brief Get a map of pointers for the registered arguments
-     */
-    const std::map<std::string, Argument*>& getArgs() { return m_args; }
+    virtual void Exec() const = 0;
+    virtual void Help(const std::string& appname = "") const;
 
-    /**
-     * @brief Get a map of pointers for the registered positional arguments
-     */
-    const std::vector<PositionalArgument*>& getPositionalArgs() { return m_positionals; }
-
-    /**
-     * @brief Print help information for the command
-     * @param appname The name of the application
-     *
-     * This is a virtual function that can be override for customize the help information of the command.
-     */
-    virtual void Help(const std::string& appname) const;
-
-    /**
-     * @brief Execute the command action
-     *
-     * This is a pure virtual function that must be implemented by your custom commands.
-     */
-    virtual void Exec() = 0;
+    virtual ~Command() = default;
   };
 
 }  // namespace ChronoCLI

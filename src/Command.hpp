@@ -18,15 +18,25 @@ namespace ChronoCLI {
     std::map<std::string, std::shared_ptr<KeywordArgument>> m_keyArgMap;
     std::vector<std::unique_ptr<PositionalArgument>> m_posArgVec;
 
-   public:
-    Command(const std::string& name, const std::string& description) : m_name(name), m_desc(description) {}
-
-    std::string getName();
-    std::string getDesc();
-
+   protected:
     void RegisterArgument(std::shared_ptr<FlagArgument> arg);
     void RegisterArgument(std::shared_ptr<KeywordArgument> arg);
     void RegisterArgument(std::unique_ptr<PositionalArgument> arg);
+
+   public:
+    Command(const std::string& name, const std::string& description) : m_name(name), m_desc(description) {}
+
+    std::string getName() const;
+    std::string getDesc() const;
+    bool hasArg(const std::string& id) const;
+
+    bool setFlag(const std::string& key);
+    bool setOption(const std::string& key, const std::string& value);
+    bool setPositional(const std::string& value);
+
+    const std::shared_ptr<FlagArgument>& findFlag(const std::string& key) const;
+    const std::shared_ptr<KeywordArgument>& findOption(const std::string& key) const;
+    const std::unique_ptr<PositionalArgument>& getPositional(const int index) const;
 
     virtual void Exec() const = 0;
     virtual void Help(const std::string& appname = "") const;

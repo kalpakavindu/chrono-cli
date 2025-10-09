@@ -4,12 +4,66 @@
 
 using namespace ChronoCLI;
 
-std::string Command::getName() {
+std::string Command::getName() const {
   return m_name;
 }
 
-std::string Command::getDesc() {
+std::string Command::getDesc() const {
   return m_desc;
+}
+
+bool Command::hasArg(const std::string& id) const {
+  if (m_flgArgMap.contains(id)) return true;
+  if (m_keyArgMap.contains(id)) return true;
+  for (auto& a : m_posArgVec) {
+    if (a->getKey() == id) return true;
+  }
+  return false;
+}
+
+bool Command::setFlag(const std::string& id) {
+  auto it = m_flgArgMap.find(id);
+  if (it == m_flgArgMap.end()) return false;
+  it->second->setFlag();
+  return true;
+}
+
+bool Command::setOption(const std::string& key, const std::string& value) {
+  auto it = m_keyArgMap.find(key);
+  if (it == m_keyArgMap.end()) return false;
+  it->second->setValue(value);
+  return true;
+}
+
+bool Command::setPositional(const std::string& value) {
+  bool vgs = false;
+  for (auto& it : m_posArgVec) {
+    if (it->hasValue()) continue;
+    it->setValue(value);
+    vgs = true;
+  }
+  return vgs;
+}
+
+const std::shared_ptr<FlagArgument>& Command::findFlag(const std::string& key) const {
+  auto it = m_flgArgMap.find(key);
+  if (it != m_flgArgMap.end()) {
+    return it->second;
+  }
+  return nullptr;
+}
+
+const std::shared_ptr<KeywordArgument>& Command::findOption(const std::string& key) const {
+  auto it = m_keyArgMap.find(key);
+  if (it != m_keyArgMap.end()) {
+    return it->second;
+  }
+  return nullptr;
+}
+
+const std::unique_ptr<PositionalArgument>& Command::getPositional(const int index) const {
+  if (index < m_posArgVec.size()) return m_posArgVec.at(index);
+  return nullptr;
 }
 
 void Command::RegisterArgument(std::shared_ptr<FlagArgument> arg) {

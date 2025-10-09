@@ -64,7 +64,7 @@ bool PlaceholderBase::hasPlaceholder() const {
 
 // Class: ValuedBase
 
-void ValuedBase::m_setValue(const std::string& data) {
+void ValuedBase::setValue(const std::string& data) {
   m_value = data;
 }
 

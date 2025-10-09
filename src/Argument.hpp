@@ -50,8 +50,6 @@ namespace ChronoCLI {
    protected:
     std::optional<std::string> m_value;
 
-    void m_setValue(const std::string& data);
-
     template <typename T>
     T m_convert(const std::string& value) {
       if constexpr (std::is_same_v<T, std::string>) return value;
@@ -63,6 +61,10 @@ namespace ChronoCLI {
     }
 
    public:
+    ValuedBase() {}
+
+    void setValue(const std::string& data);
+
     bool hasValue() const;
 
     template <typename T>

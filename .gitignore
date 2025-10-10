@@ -45,3 +45,6 @@ _deps
 CMakeUserPresets.json
 
 build/
+
+# Personal task organization files.
+V*.feat.txt

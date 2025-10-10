@@ -1,4 +1,4 @@
-file(GLOB SOURCE_FILES *.cpp *.hpp)
+file(GLOB SOURCE_FILES *.hpp *.cpp)
 file(GLOB HEADER_FILES *.hpp)
 
 add_library(chronocli STATIC ${SOURCE_FILES})

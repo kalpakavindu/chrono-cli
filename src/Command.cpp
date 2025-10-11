@@ -12,12 +12,13 @@ std::string Command::getDesc() const {
   return m_desc;
 }
 
-bool Command::hasArg(const std::string& id) const {
-  if (m_flgArgMap.contains(id)) return true;
-  if (m_keyArgMap.contains(id)) return true;
-  for (auto& a : m_posArgVec) {
-    if (a->getKey() == id) return true;
-  }
+bool Command::hasFlag(const std::string& key) const {
+  if (m_flgArgMap.find(key) != m_flgArgMap.end()) return true;
+  return false;
+}
+
+bool Command::hasOption(const std::string& key) const {
+  if (m_keyArgMap.find(key) != m_keyArgMap.end()) return true;
   return false;
 }
 
@@ -68,12 +69,10 @@ const std::unique_ptr<PositionalArgument>& Command::getPositional(const int inde
 
 void Command::RegisterArgument(std::shared_ptr<FlagArgument> arg) {
   if (!arg) return;
-  auto it = m_flgArgMap.find(arg->getKey());
-  if (it != m_flgArgMap.end()) throw Exception("ArgRegError", "Flag key " + arg->getKey() + " already registered");
+  if (m_flgArgMap.find(arg->getKey()) != m_flgArgMap.end()) throw Exception("ArgRegError", "Flag key " + arg->getKey() + " already registered");
 
   if (arg->hasShortKey()) {
-    it = m_flgArgMap.find(arg->getShortKey());
-    if (it != m_flgArgMap.end()) throw Exception("ArgRegError", "Flag shortkey " + arg->getShortKey() + " already registered");
+    if (m_flgArgMap.find(arg->getShortKey()) != m_flgArgMap.end()) throw Exception("ArgRegError", "Flag shortkey " + arg->getShortKey() + " already registered");
   }
 
   m_flgArgMap.emplace(arg->getKey(), arg);
@@ -82,12 +81,10 @@ void Command::RegisterArgument(std::shared_ptr<FlagArgument> arg) {
 
 void Command::RegisterArgument(std::shared_ptr<KeywordArgument> arg) {
   if (!arg) return;
-  auto it = m_keyArgMap.find(arg->getKey());
-  if (it != m_keyArgMap.end()) throw Exception("ArgRegError", "Keyword argument key " + arg->getKey() + " already registered");
+  if (m_keyArgMap.find(arg->getKey()) != m_keyArgMap.end()) throw Exception("ArgRegError", "Keyword argument key " + arg->getKey() + " already registered");
 
   if (arg->hasShortKey()) {
-    it = m_keyArgMap.find(arg->getShortKey());
-    if (it != m_keyArgMap.end()) throw Exception("ArgRegError", "Keyword argument shortkey " + arg->getShortKey() + " already registered");
+    if (m_keyArgMap.find(arg->getShortKey()) != m_keyArgMap.end()) throw Exception("ArgRegError", "Keyword argument shortkey " + arg->getShortKey() + " already registered");
   }
 
   m_keyArgMap.emplace(arg->getKey(), arg);

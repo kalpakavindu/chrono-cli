@@ -26,9 +26,15 @@ namespace ChronoCLI {
    public:
     Command(const std::string& name, const std::string& description) : m_name(name), m_desc(description) {}
 
+    static std::shared_ptr<Command> Ptr(const std::string& name, const std::string& description) {
+      return std::make_shared<Command>(name, description);
+    }
+
     std::string getName() const;
     std::string getDesc() const;
-    bool hasArg(const std::string& id) const;
+
+    bool hasFlag(const std::string& key) const;
+    bool hasOption(const std::string& key) const;
 
     bool setFlag(const std::string& key);
     bool setOption(const std::string& key, const std::string& value);

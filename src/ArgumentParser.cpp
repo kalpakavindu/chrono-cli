@@ -2,97 +2,93 @@
 
 using namespace ChronoCLI;
 
-std::map<std::string, std::string>& ArgumentParser::m_getTargetMap(bool isGlobal) {
-  return isGlobal ? m_globalArgs : m_args;
+std::string ArgumentParser::getAppName() const {
+  if (m_appname.empty()) return "";
+  return m_appname;
 }
 
-void ArgumentParser::m_parseOption(std::string& arg, bool isGlobal) {
-  auto& m = isGlobal ? m_globalArgs : m_args;
-
-  size_t eqPos = arg.find("=");
-  if (eqPos != std::string::npos) {
-    // Key value arguments
-    m[arg.substr(0, eqPos)] = arg.substr(eqPos + 1);
-  } else {
-    // Flags
-    m[arg] = "true";
-  }
-}
-
-std::string& ArgumentParser::m_get(const std::string& key, bool isGlobal) {
-  std::map<std::string, std::string>::iterator it;
-
-  std::map<std::string, std::string>& m = m_getTargetMap(isGlobal);
-  size_t skpos = key.find("|");
-
-  if (skpos != std::string::npos) {
-    it = m.find(key.substr(0, skpos));
-    if (it == m.end()) {
-      it = m.find(key.substr(skpos + 1));
-    }
-  } else {
-    it = m.find(key);
-  }
-
-  if (it == m.end()) throw CommandError::MissingArgument(key);
-  return it->second;
-}
-
-ArgumentParser::ArgumentParser(int argc, const char* argv[]) {
-  m_appName = argv[0];
-
-  int pos = 1;
-
-  // Process global options
-  while (pos < argc) {
-    std::string arg = argv[pos];
-
-    if (!arg.empty() && (arg.substr(0, 1) != "-")) {
-      // First arg not starting with '-' is a command
-      m_commandName = arg;
-      ++pos;  // Set the cursor to the first command argument
-      break;
-    }
-
-    m_parseOption(arg, true);
-    ++pos;
-  }
-
-  // Process command options
-  while (pos < argc) {
-    std::string arg = argv[pos];
-
-    if (!arg.empty() && (arg.substr(0, 1) == "-")) {
-      m_parseOption(arg, false);
-    } else {
-      m_positionalArgs.push_back(argv[pos]);
-    }
-
-    ++pos;
-  }
-}
-
-bool ArgumentParser::hasKey(const std::string& key) const {
-  size_t skpos = key.find("|");
-  if (skpos != std::string::npos) {
-    return (m_args.find(key.substr(0, skpos)) != m_args.end()) || (m_args.find(key.substr(skpos + 1)) != m_args.end());
-  }
-  return m_args.find(key) != m_args.end();
-}
-
-bool ArgumentParser::hasGlobalKey(const std::string& key) const {
-  size_t skpos = key.find("|");
-  if (skpos != std::string::npos) {
-    return (m_globalArgs.find(key.substr(0, skpos)) != m_globalArgs.end()) || (m_globalArgs.find(key.substr(skpos + 1)) != m_globalArgs.end());
-  }
-  return m_globalArgs.find(key) != m_globalArgs.end();
+std::string ArgumentParser::getCommandName() const {
+  if (m_cmdName.has_value()) return m_cmdName.value();
+  return "";
 }
 
 bool ArgumentParser::hasCommand() const {
-  return m_commandName.has_value();
+  return m_cmdName.has_value();
 }
 
-const std::string ArgumentParser::getCommandName() const {
-  if (m_commandName.has_value()) return m_commandName.value();
-  return "";
+bool ArgumentParser::hasOption(const std::string& key) const {
+  if (m_optMap.find(key) != m_optMap.end()) return true;
+  return false;
+}
+
+bool ArgumentParser::hasGlobalOption(const std::string& key) const {
+  if (m_gOptMap.find(key) != m_gOptMap.end()) return true;
+  return false;
+}
+
+int ArgumentParser::positionalCount() const {
+  return m_posVec.size();
+}
+
+std::string ArgumentParser::getPositional(int index) const {
+  if (index >= m_posVec.size()) return "";
+  return m_posVec[index];
+}
+
+std::string ArgumentParser::getOption(const std::string& key) const {
+  auto it = m_optMap.find(key);
+  if (it == m_optMap.end()) return "";
+  return it->second;
+}
+
+std::string ArgumentParser::getGlobalOption(const std::string& key) const {
+  auto it = m_gOptMap.find(key);
+  if (it == m_gOptMap.end()) return "";
+  return it->second;
+}
+
+void ArgumentParser::m_parseOption(std::string& arg, bool isGlobal) {
+  size_t eqPos = arg.find("=");
+  if (eqPos == std::string::npos) {
+    if (isGlobal) {
+      m_gOptMap.emplace(arg, "1");
+    } else {
+      m_optMap.emplace(arg, "1");
+    }
+  } else {
+    if (isGlobal) {
+      m_gOptMap.emplace(arg.substr(0, eqPos), arg.substr(eqPos + 1));
+    } else {
+      m_optMap.emplace(arg.substr(0, eqPos), arg.substr(eqPos + 1));
+    }
+  }
+}
+
+ArgumentParser::ArgumentParser(int argc, const char* argv[]) {
+  if (argc == 0) return;
+
+  m_appname = argv[0];
+
+  int stPos = 1;
+  while (stPos < argc) {
+    std::string token = argv[stPos];
+    if (token.substr(0, 1) == "-") {
+      m_parseOption(token, true);
+      ++stPos;
+    } else {
+      m_cmdName = token;
+      ++stPos;
+      break;
+    }
+  }
+
+  while (stPos < argc) {
+    std::string token = argv[stPos];
+    if (token.substr(0, 1) == "-") {
+      m_parseOption(token);
+    } else {
+      m_posVec.push_back(token);
+    }
+    ++stPos;
+  }
 }

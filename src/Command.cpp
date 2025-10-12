@@ -31,7 +31,14 @@ bool Command::setFlag(const std::string& id) {
 
 bool Command::setOption(const std::string& key, const std::string& value) {
   auto it = m_keyArgMap.find(key);
-  if (it == m_keyArgMap.end()) return false;
+
+  if (it == m_keyArgMap.end()) {
+    auto fit = m_flgArgMap.find(key);
+    if (fit == m_flgArgMap.end()) return false;
+    fit->second->setFlag();
+    return true;
+  }
+
   it->second->setValue(value);
   return true;
 }

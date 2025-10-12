@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "Argument.hpp"
+#include "GlobalArgRegistry.hpp"
 
 namespace ChronoCLI {
 
@@ -44,7 +45,7 @@ namespace ChronoCLI {
     const std::shared_ptr<KeywordArgument>& findOption(const std::string& key) const;
     const std::unique_ptr<PositionalArgument>& getPositional(const int index) const;
 
-    virtual void Exec() const = 0;
+    virtual void Exec(const GlobalArgRegistry& globalArgs) const = 0;
     virtual void Help(const std::string& appname = "") const;
 
     virtual ~Command() = default;

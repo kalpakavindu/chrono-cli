@@ -47,6 +47,18 @@ std::string ArgumentParser::getGlobalOption(const std::string& key) const {
   return it->second;
 }
 
+std::map<std::string, std::string> ArgumentParser::getOptions() const {
+  return m_optMap;
+}
+
+std::map<std::string, std::string> ArgumentParser::getGlobalOptions() const {
+  return m_gOptMap;
+}
+
+std::vector<std::string> ArgumentParser::getPositionals() const {
+  return m_posVec;
+}
+
 void ArgumentParser::m_parseOption(std::string& arg, bool isGlobal) {
   size_t eqPos = arg.find("=");
   if (eqPos == std::string::npos) {

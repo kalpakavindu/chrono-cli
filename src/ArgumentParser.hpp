@@ -30,6 +30,10 @@ namespace ChronoCLI {
     std::string getGlobalOption(const std::string& key) const;
     std::string getPositional(int index) const;
 
+    std::map<std::string, std::string> getOptions() const;
+    std::map<std::string, std::string> getGlobalOptions() const;
+    std::vector<std::string> getPositionals() const;
+
     bool hasCommand() const;
     bool hasOption(const std::string& key) const;
     bool hasGlobalOption(const std::string& key) const;

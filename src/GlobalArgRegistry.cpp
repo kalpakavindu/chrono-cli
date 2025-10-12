@@ -36,7 +36,7 @@ bool GlobalArgRegistry::setOption(const std::string& key, const std::string& val
   return true;
 }
 
-const std::shared_ptr<FlagArgument>& GlobalArgRegistry::findFlag(const std::string& key) const {
+const std::shared_ptr<FlagArgument> GlobalArgRegistry::findFlag(const std::string& key) const {
   auto it = m_flgArgMap.find(key);
   if (it != m_flgArgMap.end()) {
     return it->second;
@@ -44,7 +44,7 @@ const std::shared_ptr<FlagArgument>& GlobalArgRegistry::findFlag(const std::stri
   return nullptr;
 }
 
-const std::shared_ptr<KeywordArgument>& GlobalArgRegistry::findOption(const std::string& key) const {
+const std::shared_ptr<KeywordArgument> GlobalArgRegistry::findOption(const std::string& key) const {
   auto it = m_keyArgMap.find(key);
   if (it != m_keyArgMap.end()) {
     return it->second;

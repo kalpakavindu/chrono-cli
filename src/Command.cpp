@@ -53,7 +53,7 @@ bool Command::setPositional(const std::string& value) {
   return vgs;
 }
 
-const std::shared_ptr<FlagArgument>& Command::findFlag(const std::string& key) const {
+const std::shared_ptr<FlagArgument> Command::findFlag(const std::string& key) const {
   auto it = m_flgArgMap.find(key);
   if (it != m_flgArgMap.end()) {
     return it->second;
@@ -61,7 +61,7 @@ const std::shared_ptr<FlagArgument>& Command::findFlag(const std::string& key) c
   return nullptr;
 }
 
-const std::shared_ptr<KeywordArgument>& Command::findOption(const std::string& key) const {
+const std::shared_ptr<KeywordArgument> Command::findOption(const std::string& key) const {
   auto it = m_keyArgMap.find(key);
   if (it != m_keyArgMap.end()) {
     return it->second;
@@ -69,9 +69,9 @@ const std::shared_ptr<KeywordArgument>& Command::findOption(const std::string& k
   return nullptr;
 }
 
-const std::unique_ptr<PositionalArgument>& Command::getPositional(const int index) const {
-  if (index < m_posArgVec.size()) return m_posArgVec.at(index);
-  return nullptr;
+const std::shared_ptr<PositionalArgument> Command::getPositional(const int index) const {
+  if (index >= m_posArgVec.size()) return nullptr;
+  return m_posArgVec.at(index);
 }
 
 void Command::RegisterArgument(std::shared_ptr<FlagArgument> arg) {
@@ -98,7 +98,7 @@ void Command::RegisterArgument(std::shared_ptr<KeywordArgument> arg) {
   if (arg->hasShortKey()) m_keyArgMap.emplace(arg->getShortKey(), arg);
 }
 
-void Command::RegisterArgument(std::unique_ptr<PositionalArgument> arg) {
+void Command::RegisterArgument(std::shared_ptr<PositionalArgument> arg) {
   if (!arg) return;
   for (auto& i : m_posArgVec) {
     if (i->getKey() == arg->getKey()) throw Exception("ArgRegError", "Positional argument name " + arg->getKey() + " already registered");

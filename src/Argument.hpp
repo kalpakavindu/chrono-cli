@@ -94,6 +94,7 @@ namespace ChronoCLI {
    private:
     bool m_isset = false;
 
+   public:
     FlagArgument(
         const std::string& key,
         const std::string& description,
@@ -101,7 +102,6 @@ namespace ChronoCLI {
         bool required = false) : ArgumentBase(key, description, required),
                                  ShortKeyBase(shortkey) {}
 
-   public:
     static std::shared_ptr<FlagArgument> Optional(const std::string& key, const std::string& description, const std::string& shortkey = "") {
       return std::make_shared<FlagArgument>(key, description, shortkey, false);
     }
@@ -116,7 +116,7 @@ namespace ChronoCLI {
   };
 
   class PositionalArgument : public ArgumentBase, public ValuedBase, public PlaceholderBase {
-   private:
+   public:
     PositionalArgument(
         const std::string& key,
         const std::string& description,
@@ -124,18 +124,17 @@ namespace ChronoCLI {
         bool required = false) : ArgumentBase(key, description, required),
                                  PlaceholderBase(placeholder) {}
 
-   public:
-    static std::unique_ptr<PositionalArgument> Optional(const std::string& key, const std::string& description, const std::string& placeholder = "") {
-      return std::make_unique<PositionalArgument>(key, description, placeholder, false);
+    static std::shared_ptr<PositionalArgument> Optional(const std::string& key, const std::string& description, const std::string& placeholder = "") {
+      return std::make_shared<PositionalArgument>(key, description, placeholder, false);
     }
 
-    static std::unique_ptr<PositionalArgument> Required(const std::string& key, const std::string& description, const std::string& placeholder = "") {
-      return std::make_unique<PositionalArgument>(key, description, placeholder, true);
+    static std::shared_ptr<PositionalArgument> Required(const std::string& key, const std::string& description, const std::string& placeholder = "") {
+      return std::make_shared<PositionalArgument>(key, description, placeholder, true);
     }
   };
 
   class KeywordArgument : public ArgumentBase, public ValuedBase, public ShortKeyBase, public PlaceholderBase {
-   private:
+   public:
     KeywordArgument(
         const std::string& key,
         const std::string& description,
@@ -145,7 +144,6 @@ namespace ChronoCLI {
                                  ShortKeyBase(shortkey),
                                  PlaceholderBase(placeholder) {}
 
-   public:
     static std::shared_ptr<KeywordArgument> Optional(const std::string& key, const std::string& description, const std::string& shortkey = "", const std::string& placeholder = "") {
       return std::make_shared<KeywordArgument>(key, description, shortkey, placeholder, false);
     }

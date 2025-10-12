@@ -17,12 +17,12 @@ namespace ChronoCLI {
 
     std::map<std::string, std::shared_ptr<FlagArgument>> m_flgArgMap;
     std::map<std::string, std::shared_ptr<KeywordArgument>> m_keyArgMap;
-    std::vector<std::unique_ptr<PositionalArgument>> m_posArgVec;
+    std::vector<std::shared_ptr<PositionalArgument>> m_posArgVec;
 
    protected:
     void RegisterArgument(std::shared_ptr<FlagArgument> arg);
     void RegisterArgument(std::shared_ptr<KeywordArgument> arg);
-    void RegisterArgument(std::unique_ptr<PositionalArgument> arg);
+    void RegisterArgument(std::shared_ptr<PositionalArgument> arg);
 
    public:
     Command(const std::string& name, const std::string& description) : m_name(name), m_desc(description) {}
@@ -41,11 +41,11 @@ namespace ChronoCLI {
     bool setOption(const std::string& key, const std::string& value);
     bool setPositional(const std::string& value);
 
-    const std::shared_ptr<FlagArgument>& findFlag(const std::string& key) const;
-    const std::shared_ptr<KeywordArgument>& findOption(const std::string& key) const;
-    const std::unique_ptr<PositionalArgument>& getPositional(const int index) const;
+    const std::shared_ptr<FlagArgument> findFlag(const std::string& key) const;
+    const std::shared_ptr<KeywordArgument> findOption(const std::string& key) const;
+    const std::shared_ptr<PositionalArgument> getPositional(const int index) const;
 
-    virtual void Exec(const GlobalArgRegistry& globalArgs) const = 0;
+    virtual void Exec(const GlobalArgRegistry& globalArgs) const { return; }
     virtual void Help(const std::string& appname = "") const;
 
     virtual ~Command() = default;

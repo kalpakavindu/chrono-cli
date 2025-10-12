@@ -19,8 +19,8 @@ namespace ChronoCLI {
     void RegisterOption(std::shared_ptr<KeywordArgument> arg);
     bool setOption(const std::string& key, const std::string& value);
 
-    const std::shared_ptr<FlagArgument>& findFlag(const std::string& key) const;
-    const std::shared_ptr<KeywordArgument>& findOption(const std::string& key) const;
+    const std::shared_ptr<FlagArgument> findFlag(const std::string& key) const;
+    const std::shared_ptr<KeywordArgument> findOption(const std::string& key) const;
     bool hasOption(const std::string& key) const;
   };
 

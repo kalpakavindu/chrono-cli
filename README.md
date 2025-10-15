@@ -1,6 +1,6 @@
 # ChronoCLI
 
-ChronoCLI is a modern, extensible C++ library for building command-line applications with support for commands, options, positional arguments, and automatic help generation.
+ChronoCLI is a modern, extensible C++ library for building command-line applications with support for commands, options, positional arguments, and in-built help messages.
 
 ## Features
 

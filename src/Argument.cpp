@@ -2,102 +2,81 @@
 
 using namespace ChronoCLI;
 
-// Class: ArgumentBase
-
-std::string ArgumentBase::getKey() const {
-  return m_key;
+std::string ArgumentCommons::getDesc() const {
+  return m_desc;
 }
 
-std::string ArgumentBase::getDesc() const {
-  return m_description;
-}
-
-bool ArgumentBase::isRequired() const {
-  return m_isRequired;
-}
-
-// --------------------------
-
-// Class: ShortKeyBase
-
-ShortKeyBase::ShortKeyBase(const std::string& shortkey) {
-  if (shortkey == "") return;
-  if (shortkey.size() > 4) throw Exception("ArgDefError", "Maximum 4 characters allowed for shortkeys");
-  if (m_shortkey.has_value()) throw Exception("ArgDefError", "Shortkeys can not be redefined");
-  m_shortkey = shortkey;
-}
-
-std::string ShortKeyBase::getShortKey() const {
-  if (m_shortkey.has_value()) {
-    return "-" + m_shortkey.value();
-  }
-  return "";
-}
-
-bool ShortKeyBase::hasShortKey() const {
-  return m_shortkey.has_value();
-}
-
-// --------------------------
-
-// Class: PlaceholderBase
-
-PlaceholderBase::PlaceholderBase(const std::string& placeholder) {
-  if (placeholder == "") return;
-  if (placeholder.size() > 12) throw Exception("ArgDefError", "Maximum 12 characters allowed for placeholders");
-  if (m_placeholder.has_value()) throw Exception("ArgDefError", "Placeholders can not be redefined");
-  m_placeholder = placeholder;
-}
-
-std::string PlaceholderBase::getPlaceholder() const {
-  if (m_placeholder.has_value()) {
-    return "<" + m_placeholder.value() + ">";
-  }
-  return "";
-}
-
-bool PlaceholderBase::hasPlaceholder() const {
-  return m_placeholder.has_value();
-}
-
-// --------------------------
-
-// Class: ValuedBase
-
-void ValuedBase::setValue(const std::string& data) {
-  m_value = data;
-}
-
-bool ValuedBase::hasValue() const {
+bool ArgumentCommons::isSet() const {
   return m_value.has_value();
 }
 
-// --------------------------
+bool ArgumentCommons::isRequired() const {
+  return m_isRequired;
+}
 
-// Class: FlagArgument
+std::string ArgumentCommons::getPlaceHolder() const {
+  if (m_placeHolder.has_value()) {
+    return "<" + m_placeHolder.value() + ">";
+  }
+  return "";
+}
 
-std::string FlagArgument::getKey() const {
+bool ArgumentCommons::hasPlaceHolder() const {
+  return m_placeHolder.has_value();
+}
+
+Argument::Argument(
+    const std::string& key,
+    const std::string& description,
+    const std::string& shortKey,
+    const std::string& placeHolder,
+    bool isRequired,
+    bool isFlag) : ArgumentCommons(description, placeHolder, isRequired), m_isFlag(isFlag) {
+  if (key.substr(0, 1) == "-") throw Exception("ArgInitError", "Key must not start with '-'");
+  m_key = m_trim(key);
+
+  if (shortKey != "") {
+    if (shortKey.length() > 5) throw Exception("ArgInitError", "ShortKey must have maximum 5 characters");
+    if (shortKey.substr(0, 1) == "-") throw Exception("ArgInitError", "Shortkey must not start with '-'");
+    m_shortKey = m_trim(shortKey);
+  }
+}
+
+std::string Argument::getKey() const {
   return "--" + m_key;
 }
 
-void FlagArgument::setFlag() {
-  m_isset = true;
+std::string Argument::getShortKey() const {
+  if (m_shortKey.has_value()) {
+    return "-" + m_shortKey.value();
+  }
+  return "";
 }
 
-bool FlagArgument::isSet() const {
-  return m_isset;
+bool Argument::isFlag() const {
+  return m_isFlag;
 }
 
-// --------------------------
-
-// Class: KeywordArgument
-
-std::string KeywordArgument::getKey() const {
-  return "--" + m_key;
+bool Argument::hasShortKey() const {
+  return m_placeHolder.has_value();
 }
 
-// --------------------------
+void Argument::setValue(const std::string& value) {
+  if (value != "") {
+    m_setValue(value);
+  } else {
+    if (m_isFlag) {
+      m_setValue("1");
+    }
+  }
+}
 
-// Class: PositionalArgument
+unsigned int Positional::getId() const {
+  return m_id;
+}
 
-// --------------------------
+void Positional::setValue(const std::string& value) {
+  if (value != "" || !value.empty()) {
+    m_setValue(value);
+  }
+}

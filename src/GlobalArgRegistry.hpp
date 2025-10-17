@@ -14,11 +14,15 @@ namespace ChronoCLI {
     std::map<std::string, Argument*> m_argMap;
 
    public:
-    void RegisterArg(Argument* arg);
+    GlobalArgRegistry() {}
+
+    void RegisterArgument(Argument* arg);
     bool setOption(const std::string& key, const std::string& value);
 
     std::optional<Argument> findByKey(const std::string& key) const;
     bool hasArg(const std::string& key) const;
+
+    ~GlobalArgRegistry();
   };
 
 }  // namespace ChronoCLI

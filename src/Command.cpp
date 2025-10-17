@@ -12,98 +12,59 @@ std::string Command::getDesc() const {
   return m_desc;
 }
 
-bool Command::hasFlag(const std::string& key) const {
-  if (m_flgArgMap.find(key) != m_flgArgMap.end()) return true;
+bool Command::hasArgument(const std::string& key) const {
+  if (m_argMap.find(key) != m_argMap.end()) return true;
   return false;
 }
 
-bool Command::hasOption(const std::string& key) const {
-  if (m_keyArgMap.find(key) != m_keyArgMap.end()) return true;
-  return false;
-}
-
-bool Command::setFlag(const std::string& id) {
-  auto it = m_flgArgMap.find(id);
-  if (it == m_flgArgMap.end()) return false;
-  it->second->setFlag();
-  return true;
-}
-
-bool Command::setOption(const std::string& key, const std::string& value) {
-  auto it = m_keyArgMap.find(key);
-
-  if (it == m_keyArgMap.end()) {
-    auto fit = m_flgArgMap.find(key);
-    if (fit == m_flgArgMap.end()) return false;
-    fit->second->setFlag();
-    return true;
-  }
-
+bool Command::setArgument(const std::string& key, const std::string& value) {
+  auto it = m_argMap.find(key);
+  if (it == m_argMap.end()) return false;
   it->second->setValue(value);
   return true;
 }
 
-bool Command::setPositional(const std::string& value) {
+bool Command::setPositional(unsigned int id, const std::string& value) {
   bool vgs = false;
-  for (auto& it : m_posArgVec) {
-    if (it->hasValue()) continue;
+  for (auto& it : m_posVec) {
+    if (it->getId() != id) continue;
     it->setValue(value);
     vgs = true;
   }
   return vgs;
 }
 
-const std::shared_ptr<FlagArgument> Command::findFlag(const std::string& key) const {
-  auto it = m_flgArgMap.find(key);
-  if (it != m_flgArgMap.end()) {
-    return it->second;
+std::optional<Argument> Command::getArgument(const std::string& key) const {
+  auto it = m_argMap.find(key);
+  if (it != m_argMap.end()) {
+    return std::optional<Argument>(*(it->second));
   }
-  return nullptr;
+  return std::nullopt;
 }
 
-const std::shared_ptr<KeywordArgument> Command::findOption(const std::string& key) const {
-  auto it = m_keyArgMap.find(key);
-  if (it != m_keyArgMap.end()) {
-    return it->second;
-  }
-  return nullptr;
+std::optional<Positional> Command::getPositional(unsigned int index) const {
+  if (index >= m_posVec.size()) return std::nullopt;
+  return std::optional<Positional>(*(m_posVec.at(index)));
 }
 
-const std::shared_ptr<PositionalArgument> Command::getPositional(const int index) const {
-  if (index >= m_posArgVec.size()) return nullptr;
-  return m_posArgVec.at(index);
-}
-
-void Command::RegisterArgument(std::shared_ptr<FlagArgument> arg) {
+void Command::RegisterArgument(Argument* arg) {
   if (!arg) return;
-  if (m_flgArgMap.find(arg->getKey()) != m_flgArgMap.end()) throw Exception("ArgRegError", "Flag key " + arg->getKey() + " already registered");
+  if (m_argMap.find(arg->getKey()) != m_argMap.end()) throw Exception("ArgRegError", "Flag key " + arg->getKey() + " already registered");
 
   if (arg->hasShortKey()) {
-    if (m_flgArgMap.find(arg->getShortKey()) != m_flgArgMap.end()) throw Exception("ArgRegError", "Flag shortkey " + arg->getShortKey() + " already registered");
+    if (m_argMap.find(arg->getShortKey()) != m_argMap.end()) throw Exception("ArgRegError", "Flag shortkey " + arg->getShortKey() + " already registered");
   }
 
-  m_flgArgMap.emplace(arg->getKey(), arg);
-  if (arg->hasShortKey()) m_flgArgMap.emplace(arg->getShortKey(), arg);
+  m_argMap.emplace(arg->getKey(), arg);
+  if (arg->hasShortKey()) m_argMap.emplace(arg->getShortKey(), arg);
 }
 
-void Command::RegisterArgument(std::shared_ptr<KeywordArgument> arg) {
+void Command::RegisterArgument(Positional* arg) {
   if (!arg) return;
-  if (m_keyArgMap.find(arg->getKey()) != m_keyArgMap.end()) throw Exception("ArgRegError", "Keyword argument key " + arg->getKey() + " already registered");
-
-  if (arg->hasShortKey()) {
-    if (m_keyArgMap.find(arg->getShortKey()) != m_keyArgMap.end()) throw Exception("ArgRegError", "Keyword argument shortkey " + arg->getShortKey() + " already registered");
+  for (auto& i : m_posVec) {
+    if (i->getId() == arg->getId()) throw Exception("ArgRegError", "Positional argument id " + std::to_string(arg->getId()) + " already registered");
   }
-
-  m_keyArgMap.emplace(arg->getKey(), arg);
-  if (arg->hasShortKey()) m_keyArgMap.emplace(arg->getShortKey(), arg);
-}
-
-void Command::RegisterArgument(std::shared_ptr<PositionalArgument> arg) {
-  if (!arg) return;
-  for (auto& i : m_posArgVec) {
-    if (i->getKey() == arg->getKey()) throw Exception("ArgRegError", "Positional argument name " + arg->getKey() + " already registered");
-  }
-  m_posArgVec.emplace_back(std::move(arg));
+  m_posVec.emplace_back(arg);
 }
 
 void Command::Help(const std::string& appname) const {
@@ -111,35 +72,14 @@ void Command::Help(const std::string& appname) const {
   if (appname != "") std::cout << appname << " ";
   std::cout << m_name << " [FLAGS] [OPTIONS] <ARGUMENTS>\n";
 
-  if (m_flgArgMap.size() > 0) {
-    std::cout << "\nAvailable flags:\n";
-
-    for (auto& it : m_flgArgMap) {
-      if (it.first.substr(1, 1) != "-") continue;  // Skip shortkeys
-
-      std::string s = "  " + it.second->getKey();
-      if (it.second->hasShortKey()) s += ", " + it.second->getShortKey();
-
-      int i = s.size();
-      while (i < 25) {
-        s += " ";
-        ++i;
-      }
-      s += it.second->isRequired() ? " *  " : "    ";
-      s += it.second->getDesc();
-      std::cout << s << "\n";
-    }
-  }
-
-  if (m_keyArgMap.size() > 0) {
+  if (m_argMap.size() > 0) {
     std::cout << "\nAvailable options:\n";
 
-    for (auto& it : m_keyArgMap) {
+    for (auto& it : m_argMap) {
       if (it.first.substr(1, 1) != "-") continue;  // Skip shortkeys
 
       std::string s = "  " + it.second->getKey();
       if (it.second->hasShortKey()) s += ", " + it.second->getShortKey();
-      if (it.second->hasPlaceholder()) s += "=" + it.second->getPlaceholder();
 
       int i = s.size();
       while (i < 25) {
@@ -152,12 +92,11 @@ void Command::Help(const std::string& appname) const {
     }
   }
 
-  if (m_posArgVec.size() > 0) {
+  if (m_posVec.size() > 0) {
     std::cout << "\nAvailable arguments:\n";
 
-    for (auto& it : m_posArgVec) {
-      std::string s = "  " + it->getKey();
-      if (it->hasPlaceholder()) s += " " + it->getPlaceholder();
+    for (auto& it : m_posVec) {
+      std::string s = "  <" + it->getPlaceHolder() + ">";
 
       int i = s.size();
       while (i < 25) {

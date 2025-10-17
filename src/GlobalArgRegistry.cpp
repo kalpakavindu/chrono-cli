@@ -2,7 +2,7 @@
 
 using namespace ChronoCLI;
 
-void GlobalArgRegistry::RegisterArg(Argument* arg) {
+void GlobalArgRegistry::RegisterArgument(Argument* arg) {
   if (!arg) return;
   if (arg->isRequired()) throw Exception("GArgRegError", "Global options cannot be required. " + arg->getKey() + " registration failed");
   if (m_argMap.find(arg->getKey()) != m_argMap.end()) throw Exception("GArgRegError", "Global option " + arg->getKey() + " already registered");
@@ -15,14 +15,11 @@ void GlobalArgRegistry::RegisterArg(Argument* arg) {
 
 bool GlobalArgRegistry::setOption(const std::string& key, const std::string& value) {
   auto it = m_argMap.find(key);
-  if (it == m_argMap.end()) {
-    auto fit = m_argMap.find(key);
-    if (fit == m_argMap.end()) return false;
-    fit->second->setValue();
+  if (it != m_argMap.end()) {
+    it->second->setValue(value);
     return true;
   }
-  it->second->setValue(value);
-  return true;
+  return false;
 }
 
 std::optional<Argument> GlobalArgRegistry::findByKey(const std::string& key) const {

@@ -11,17 +11,14 @@ namespace ChronoCLI {
 
   class GlobalArgRegistry {
    private:
-    std::map<std::string, std::shared_ptr<FlagArgument>> m_flgArgMap;
-    std::map<std::string, std::shared_ptr<KeywordArgument>> m_keyArgMap;
+    std::map<std::string, Argument*> m_argMap;
 
    public:
-    void RegisterOption(std::shared_ptr<FlagArgument> arg);
-    void RegisterOption(std::shared_ptr<KeywordArgument> arg);
+    void RegisterArg(Argument* arg);
     bool setOption(const std::string& key, const std::string& value);
 
-    const std::shared_ptr<FlagArgument> findFlag(const std::string& key) const;
-    const std::shared_ptr<KeywordArgument> findOption(const std::string& key) const;
-    bool hasOption(const std::string& key) const;
+    std::optional<Argument> findByKey(const std::string& key) const;
+    bool hasArg(const std::string& key) const;
   };
 
 }  // namespace ChronoCLI

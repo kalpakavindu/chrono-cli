@@ -34,3 +34,18 @@ bool GlobalArgRegistry::hasArg(const std::string& key) const {
   if (m_argMap.find(key) != m_argMap.end()) return true;
   return false;
 }
+
+size_t GlobalArgRegistry::size() const {
+  return m_argMap.size();
+}
+
+std::map<std::string, Argument*> GlobalArgRegistry::getMap() const {
+  return m_argMap;
+}
+
+GlobalArgRegistry::~GlobalArgRegistry() {
+  for (auto& [_, v] : m_argMap) {
+    delete v;
+  }
+  m_argMap.clear();
+}

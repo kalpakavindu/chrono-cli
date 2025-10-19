@@ -39,7 +39,7 @@ namespace ChronoCLI {
     virtual void Exec(const GlobalArgRegistry& globalArgs) const { return; }
     virtual void Help(const std::string& appname = "") const;
 
-    virtual ~Command();
+    ~Command();
   };
 
 }  // namespace ChronoCLI

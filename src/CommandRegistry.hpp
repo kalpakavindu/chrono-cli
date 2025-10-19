@@ -6,14 +6,16 @@
 #include "Command.hpp"
 
 namespace ChronoCLI {
+  typedef void (*GlobalFunc)(GlobalArgRegistry);
 
   class CommandRegistry {
    protected:
-    std::map<std::string, std::shared_ptr<Command>> m_cmdMap;
+    std::map<std::string, Command*> m_cmdMap;
     ArgumentParser m_parser;
     GlobalArgRegistry m_gArgs;
 
-    void RegisterCommand(std::shared_ptr<Command> cmd);
+    void RegisterCommand(Command* cmd);
+    void RegisterGlobalArgument(Argument* arg);
 
    public:
     CommandRegistry(int argc, const char* argv[]) : m_parser(argc, argv) {}
@@ -21,6 +23,9 @@ namespace ChronoCLI {
 
     virtual void Help(const std::string& appname) const;
     virtual void AppVersion() const = 0;
+    virtual bool GlobalExec(GlobalArgRegistry args) const { return false; };
+
+    ~CommandRegistry();
   };
 
 }  // namespace ChronoCLI

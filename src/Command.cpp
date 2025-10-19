@@ -75,19 +75,19 @@ void Command::Help(const std::string& appname) const {
   if (m_argMap.size() > 0) {
     std::cout << "\nAvailable options:\n";
 
-    for (auto& it : m_argMap) {
-      if (it.first.substr(1, 1) != "-") continue;  // Skip shortkeys
+    for (auto& [k, v] : m_argMap) {
+      if (k.substr(1, 1) != "-") continue;  // Skip shortkeys
 
-      std::string s = "  " + it.second->getKey();
-      if (it.second->hasShortKey()) s += ", " + it.second->getShortKey();
+      std::string s = "  " + v->getKey();
+      if (v->hasShortKey()) s += "," + v->getShortKey();
 
       int i = s.size();
       while (i < 25) {
         s += " ";
         ++i;
       }
-      s += it.second->isRequired() ? " *  " : "    ";
-      s += it.second->getDesc();
+      s += v->isRequired() ? " *  " : "    ";
+      s += v->getDesc();
       std::cout << s << "\n";
     }
   }
@@ -110,4 +110,16 @@ void Command::Help(const std::string& appname) const {
   }
 
   std::cout << std::endl;
+}
+
+Command::~Command() {
+  for (auto& [k, v] : m_argMap) {
+    delete v;
+  }
+  m_argMap.clear();
+
+  for (auto& p : m_posVec) {
+    delete p;
+  }
+  m_posVec.clear();
 }

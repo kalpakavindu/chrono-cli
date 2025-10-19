@@ -6,7 +6,6 @@
 #include "Command.hpp"
 
 namespace ChronoCLI {
-  typedef void (*GlobalFunc)(GlobalArgRegistry);
 
   class CommandRegistry {
    protected:

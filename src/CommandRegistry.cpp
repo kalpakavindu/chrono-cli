@@ -73,7 +73,7 @@ void CommandRegistry::Run() {
     return;
   }
 
-  if (!GlobalExec(m_gArgs)) return;
+  if (GlobalExec(m_gArgs) != 0) return;
 
   if (m_parser.hasCommand()) {
     auto cit = m_cmdMap.find(m_parser.getCommandName());

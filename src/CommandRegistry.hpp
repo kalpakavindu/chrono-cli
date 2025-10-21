@@ -19,7 +19,7 @@ namespace ChronoCLI {
 
     virtual void Help(const std::string& appname) const;
     virtual void AppVersion() const = 0;
-    virtual bool GlobalExec(GlobalArgRegistry args) const { return false; };
+    virtual int GlobalExec(GlobalArgRegistry args) const { return 0; };
 
    public:
     CommandRegistry(int argc, const char* argv[]) : m_parser(argc, argv) {}

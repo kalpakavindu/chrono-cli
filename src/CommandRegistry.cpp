@@ -47,14 +47,13 @@ void CommandRegistry::Help(const std::string& appname) const {
   std::cout << std::endl;
 }
 
-void CommandRegistry::RegisterCommand(Command* cmd) {
-  if (!cmd) return;
-  if (m_cmdMap.find(cmd->getName()) != m_cmdMap.end()) throw Exception("CmdRegError", "Command " + cmd->getName() + " already registered");
-  m_cmdMap.emplace(cmd->getName(), cmd);
+void CommandRegistry::RegisterCommand(Command&& cmd) {
+  if (m_cmdMap.find(cmd.getName()) != m_cmdMap.end()) throw Exception("CmdRegError", "Command " + cmd.getName() + " already registered");
+  m_cmdMap.emplace(cmd.getName(), new Command(cmd));
 }
 
-void CommandRegistry::RegisterGlobalArgument(Argument* arg) {
-  m_gArgs.RegisterArgument(arg);
+void CommandRegistry::RegisterGlobalArgument(Argument&& arg) {
+  m_gArgs.RegisterArgument(new Argument(arg));
 }
 
 void CommandRegistry::Run() {

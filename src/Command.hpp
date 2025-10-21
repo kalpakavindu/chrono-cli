@@ -19,8 +19,13 @@ namespace ChronoCLI {
     std::vector<Positional*> m_posVec;
 
    protected:
-    void RegisterArgument(Argument* arg);
-    void RegisterArgument(Positional* arg);
+    void RegisterArgument(Argument&& arg);
+    void RegisterArgument(Positional&& arg);
+
+    bool hasArgument(const std::string& key) const;
+
+    std::optional<Argument> getArgument(const std::string& key) const;
+    std::optional<Positional> getPositional(unsigned int index) const;
 
    public:
     Command(const std::string& name, const std::string& description) : m_name(name), m_desc(description) {}
@@ -28,15 +33,10 @@ namespace ChronoCLI {
     std::string getName() const;
     std::string getDesc() const;
 
-    bool hasArgument(const std::string& key) const;
-
     bool setArgument(const std::string& key, const std::string& value = "");
     bool setPositional(unsigned int id, const std::string& value);
 
-    std::optional<Argument> getArgument(const std::string& key) const;
-    std::optional<Positional> getPositional(unsigned int index) const;
-
-    virtual void Exec(const GlobalArgRegistry& globalArgs) const { return; }
+    virtual void Exec(GlobalArgRegistry globalArgs) const { return; }
     virtual void Help(const std::string& appname = "") const;
 
     ~Command();

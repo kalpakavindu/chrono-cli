@@ -8,22 +8,22 @@
 namespace ChronoCLI {
 
   class CommandRegistry {
-   protected:
+   private:
     std::map<std::string, Command*> m_cmdMap;
     ArgumentParser m_parser;
     GlobalArgRegistry m_gArgs;
 
-    void RegisterCommand(Command* cmd);
-    void RegisterGlobalArgument(Argument* arg);
-
-   public:
-    CommandRegistry(int argc, const char* argv[]) : m_parser(argc, argv) {}
-    void Run();
+   protected:
+    void RegisterCommand(Command&& cmd);
+    void RegisterGlobalArgument(Argument&& arg);
 
     virtual void Help(const std::string& appname) const;
     virtual void AppVersion() const = 0;
     virtual bool GlobalExec(GlobalArgRegistry args) const { return false; };
 
+   public:
+    CommandRegistry(int argc, const char* argv[]) : m_parser(argc, argv) {}
+    void Run();
     ~CommandRegistry();
   };
 

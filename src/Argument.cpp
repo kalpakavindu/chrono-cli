@@ -2,6 +2,18 @@
 
 using namespace ChronoCLI;
 
+ArgumentCommons::ArgumentCommons(const std::string& desc, const std::string& key, const std::string& placeHolder, bool isRequired) : m_desc(desc), m_isRequired(isRequired) {
+  if (!(key.empty())) {
+    if (key.substr(0, 1) == "-") throw Exception("ArgInitError", "Key must not start with '-'");
+    m_key = m_trim(key);
+  }
+
+  if (!(placeHolder.empty())) {
+    if (placeHolder.length() > 10) throw Exception("ArgInitError", "Placeholder should have maximum of 10 characters only");
+    m_placeHolder = m_trim(placeHolder);
+  }
+}
+
 std::string ArgumentCommons::getDesc() const {
   return m_desc;
 }
@@ -31,10 +43,7 @@ Argument::Argument(
     const std::string& shortKey,
     const std::string& placeHolder,
     bool isRequired,
-    bool isFlag) : ArgumentCommons(description, placeHolder, isRequired), m_isFlag(isFlag) {
-  if (key.substr(0, 1) == "-") throw Exception("ArgInitError", "Key must not start with '-'");
-  m_key = m_trim(key);
-
+    bool isFlag) : ArgumentCommons(description, key, placeHolder, isRequired), m_isFlag(isFlag) {
   if (shortKey != "") {
     if (shortKey.length() > 5) throw Exception("ArgInitError", "ShortKey must have maximum 5 characters");
     if (shortKey.substr(0, 1) == "-") throw Exception("ArgInitError", "Shortkey must not start with '-'");

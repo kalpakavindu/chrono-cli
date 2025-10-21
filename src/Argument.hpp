@@ -12,6 +12,7 @@ namespace ChronoCLI {
 
   class ArgumentCommons {
    protected:
+    std::string m_key;
     std::string m_desc;
     bool m_isRequired = false;
     std::optional<std::string> m_value;
@@ -38,12 +39,7 @@ namespace ChronoCLI {
     }
 
    public:
-    ArgumentCommons(const std::string& desc, const std::string& placeHolder = "", bool isRequired = false) : m_desc(desc), m_isRequired(isRequired) {
-      if (placeHolder != "") {
-        if (placeHolder.length() > 10) throw Exception("ArgInitError", "Placeholder should have maximum of 10 characters only");
-        m_placeHolder = m_trim(placeHolder);
-      }
-    }
+    ArgumentCommons(const std::string& desc, const std::string& key = "", const std::string& placeHolder = "", bool isRequired = false);
 
     std::string getDesc() const;
     bool isRequired() const;
@@ -85,13 +81,11 @@ namespace ChronoCLI {
 
   class Argument : public ArgumentCommons {
    private:
-    std::string m_key;
     std::optional<std::string> m_shortKey;
     bool m_isFlag = false;
-
-   public:
     Argument(const std::string& key, const std::string& description, const std::string& shortKey = "", const std::string& placeHolder = "", bool isRequired = false, bool isFlag = false);
 
+   public:
     static Argument Optional(const std::string& key, const std::string& description, const std::string& shortKey = "", const std::string& placeHolder = "") {
       return Argument(key, description, shortKey, placeHolder, false, false);
     }
@@ -100,7 +94,7 @@ namespace ChronoCLI {
       return Argument(key, description, shortKey, placeHolder, true, false);
     }
 
-    static Argument OptionalFlag(const std::string& key, const std::string& description, const std::string& shortKey = "") {
+    static Argument Flag(const std::string& key, const std::string& description, const std::string& shortKey = "") {
       return Argument(key, description, shortKey, "", false, true);
     }
 
@@ -120,7 +114,7 @@ namespace ChronoCLI {
     unsigned int m_id;
 
    public:
-    Positional(unsigned int id, const std::string& description, const std::string placeHolder = "", bool isRequired = false) : ArgumentCommons(description, placeHolder, isRequired), m_id(id) {}
+    Positional(unsigned int id, const std::string& description, const std::string placeHolder = "", bool isRequired = false) : ArgumentCommons(description, "", placeHolder, isRequired), m_id(id) {}
 
     static Positional Optional(unsigned int id, const std::string placeHolder, const std::string& description) {
       return Positional(id, placeHolder, description, false);

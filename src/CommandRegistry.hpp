@@ -14,12 +14,12 @@ namespace ChronoCLI {
     GlobalArgRegistry m_gArgs;
 
    protected:
-    void RegisterCommand(Command&& cmd);
-    void RegisterGlobalArgument(Argument&& arg);
+    void RegisterCommand(Command* cmd);
+    void RegisterGlobalArgument(Argument* arg);
 
     virtual void Help(const std::string& appname) const;
     virtual void AppVersion() const = 0;
-    virtual int GlobalExec(GlobalArgRegistry args) const { return 0; };
+    virtual int GlobalExec() const { return 0; };
 
    public:
     CommandRegistry(int argc, const char* argv[]) : m_parser(argc, argv) {}

@@ -2,7 +2,6 @@
 #ifndef CHRONOCLI_ARGUMENTPARSER_HPP
 #define CHRONOCLI_ARGUMENTPARSER_HPP
 
-#include <list>
 #include <map>
 #include <optional>
 #include <vector>
@@ -19,7 +18,7 @@ namespace ChronoCLI {
     std::map<std::string, std::string> m_gOptMap;
     std::vector<std::string> m_posVec;
 
-    void m_parseOption(std::string& arg, bool isGlobal = false);
+    void m_parseOption(std::string arg, bool isGlobal);
 
    public:
     ArgumentParser(int argc, const char* argv[]);

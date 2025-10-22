@@ -3,14 +3,13 @@
 #define CHRONOCLI_ARGUMENT_HPP
 
 #include <list>
-#include <memory>
 #include <optional>
 
 #include "Exception.hpp"
 
 namespace ChronoCLI {
 
-  class ArgumentCommons {
+  class ArgumentBase {
    protected:
     std::string m_key;
     std::string m_desc;
@@ -39,7 +38,7 @@ namespace ChronoCLI {
     }
 
    public:
-    ArgumentCommons(const std::string& desc, const std::string& key = "", const std::string& placeHolder = "", bool isRequired = false);
+    ArgumentBase(const std::string& desc, const std::string& key = "", const std::string& placeHolder = "", bool isRequired = false);
 
     std::string getDesc() const;
     bool isRequired() const;
@@ -79,27 +78,27 @@ namespace ChronoCLI {
     }
   };
 
-  class Argument : public ArgumentCommons {
+  class Argument : public ArgumentBase {
    private:
     std::optional<std::string> m_shortKey;
     bool m_isFlag = false;
     Argument(const std::string& key, const std::string& description, const std::string& shortKey = "", const std::string& placeHolder = "", bool isRequired = false, bool isFlag = false);
 
    public:
-    static Argument Optional(const std::string& key, const std::string& description, const std::string& shortKey = "", const std::string& placeHolder = "") {
-      return Argument(key, description, shortKey, placeHolder, false, false);
+    static Argument* Optional(const std::string& key, const std::string& description, const std::string& shortKey = "", const std::string& placeHolder = "") {
+      return new Argument(key, description, shortKey, placeHolder, false, false);
     }
 
-    static Argument Required(const std::string& key, const std::string& description, const std::string& shortKey = "", const std::string& placeHolder = "") {
-      return Argument(key, description, shortKey, placeHolder, true, false);
+    static Argument* Required(const std::string& key, const std::string& description, const std::string& shortKey = "", const std::string& placeHolder = "") {
+      return new Argument(key, description, shortKey, placeHolder, true, false);
     }
 
-    static Argument Flag(const std::string& key, const std::string& description, const std::string& shortKey = "") {
-      return Argument(key, description, shortKey, "", false, true);
+    static Argument* Flag(const std::string& key, const std::string& description, const std::string& shortKey = "") {
+      return new Argument(key, description, shortKey, "", false, true);
     }
 
-    static Argument RequiredFlag(const std::string& key, const std::string& description, const std::string& shortKey = "") {
-      return Argument(key, description, shortKey, "", true, true);
+    static Argument* RequiredFlag(const std::string& key, const std::string& description, const std::string& shortKey = "") {
+      return new Argument(key, description, shortKey, "", true, true);
     }
 
     void setValue(const std::string& value = "");
@@ -109,19 +108,19 @@ namespace ChronoCLI {
     bool isFlag() const;
   };
 
-  class Positional : public ArgumentCommons {
+  class Positional : public ArgumentBase {
    private:
     unsigned int m_id;
 
    public:
-    Positional(unsigned int id, const std::string& description, const std::string placeHolder = "", bool isRequired = false) : ArgumentCommons(description, "", placeHolder, isRequired), m_id(id) {}
+    Positional(unsigned int id, const std::string& description, const std::string placeHolder, bool isRequired = false) : ArgumentBase(description, "", placeHolder, isRequired), m_id(id) {}
 
-    static Positional Optional(unsigned int id, const std::string placeHolder, const std::string& description) {
-      return Positional(id, placeHolder, description, false);
+    static Positional* Optional(unsigned int id, const std::string& description, const std::string placeHolder) {
+      return new Positional(id, description, placeHolder, false);
     }
 
-    static Positional Required(unsigned int id, const std::string placeHolder, const std::string& description) {
-      return Positional(id, placeHolder, description, true);
+    static Positional* Required(unsigned int id, const std::string& description, const std::string placeHolder) {
+      return new Positional(id, description, placeHolder, true);
     }
 
     void setValue(const std::string& value);

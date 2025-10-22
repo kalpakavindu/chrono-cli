@@ -2,7 +2,7 @@
 
 using namespace ChronoCLI;
 
-ArgumentCommons::ArgumentCommons(const std::string& desc, const std::string& key, const std::string& placeHolder, bool isRequired) : m_desc(desc), m_isRequired(isRequired) {
+ArgumentBase::ArgumentBase(const std::string& desc, const std::string& key, const std::string& placeHolder, bool isRequired) : m_desc(desc), m_isRequired(isRequired) {
   if (!(key.empty())) {
     if (key.substr(0, 1) == "-") throw Exception("ArgInitError", "Key must not start with '-'");
     m_key = m_trim(key);
@@ -14,26 +14,26 @@ ArgumentCommons::ArgumentCommons(const std::string& desc, const std::string& key
   }
 }
 
-std::string ArgumentCommons::getDesc() const {
+std::string ArgumentBase::getDesc() const {
   return m_desc;
 }
 
-bool ArgumentCommons::isSet() const {
+bool ArgumentBase::isSet() const {
   return m_value.has_value();
 }
 
-bool ArgumentCommons::isRequired() const {
+bool ArgumentBase::isRequired() const {
   return m_isRequired;
 }
 
-std::string ArgumentCommons::getPlaceHolder() const {
+std::string ArgumentBase::getPlaceHolder() const {
   if (m_placeHolder.has_value()) {
     return "<" + m_placeHolder.value() + ">";
   }
   return "";
 }
 
-bool ArgumentCommons::hasPlaceHolder() const {
+bool ArgumentBase::hasPlaceHolder() const {
   return m_placeHolder.has_value();
 }
 
@@ -43,7 +43,7 @@ Argument::Argument(
     const std::string& shortKey,
     const std::string& placeHolder,
     bool isRequired,
-    bool isFlag) : ArgumentCommons(description, key, placeHolder, isRequired), m_isFlag(isFlag) {
+    bool isFlag) : ArgumentBase(description, key, placeHolder, isRequired), m_isFlag(isFlag) {
   if (shortKey != "") {
     if (shortKey.length() > 5) throw Exception("ArgInitError", "ShortKey must have maximum 5 characters");
     if (shortKey.substr(0, 1) == "-") throw Exception("ArgInitError", "Shortkey must not start with '-'");
@@ -67,7 +67,7 @@ bool Argument::isFlag() const {
 }
 
 bool Argument::hasShortKey() const {
-  return m_placeHolder.has_value();
+  return m_shortKey.has_value();
 }
 
 void Argument::setValue(const std::string& value) {

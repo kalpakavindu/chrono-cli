@@ -59,13 +59,13 @@ std::vector<std::string> ArgumentParser::getPositionals() const {
   return m_posVec;
 }
 
-void ArgumentParser::m_parseOption(std::string& arg, bool isGlobal) {
+void ArgumentParser::m_parseOption(std::string arg, bool isGlobal) {
   size_t eqPos = arg.find("=");
   if (eqPos == std::string::npos) {
     if (isGlobal) {
-      m_gOptMap.emplace(arg, "1");
+      m_gOptMap.emplace(arg, "");
     } else {
-      m_optMap.emplace(arg, "1");
+      m_optMap.emplace(arg, "");
     }
   } else {
     if (isGlobal) {
@@ -97,9 +97,9 @@ ArgumentParser::ArgumentParser(int argc, const char* argv[]) {
   while (stPos < argc) {
     std::string token = argv[stPos];
     if (token.substr(0, 1) == "-") {
-      m_parseOption(token);
+      m_parseOption(token, false);
     } else {
-      m_posVec.push_back(token);
+      m_posVec.emplace_back(token);
     }
     ++stPos;
   }

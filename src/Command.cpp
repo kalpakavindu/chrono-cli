@@ -12,11 +12,6 @@ std::string Command::getDesc() const {
   return m_desc;
 }
 
-bool Command::hasArgument(const std::string& key) const {
-  if (m_argMap.find(key) != m_argMap.end()) return true;
-  return false;
-}
-
 bool Command::setArgument(const std::string& key, const std::string& value) {
   auto it = m_argMap.find(key);
   if (it == m_argMap.end()) return false;
@@ -34,35 +29,24 @@ bool Command::setPositional(unsigned int id, const std::string& value) {
   return vgs;
 }
 
-std::optional<Argument> Command::getArgument(const std::string& key) const {
-  auto it = m_argMap.find(key);
-  if (it != m_argMap.end()) {
-    return std::optional<Argument>(*(it->second));
-  }
-  return std::nullopt;
-}
+void Command::RegisterArgument(Argument* arg) {
+  if (!arg) return;
+  if (m_argMap.find(arg->getKey()) != m_argMap.end()) throw Exception("ArgRegError", "Flag key " + arg->getKey() + " already registered");
 
-std::optional<Positional> Command::getPositional(unsigned int index) const {
-  if (index >= m_posVec.size()) return std::nullopt;
-  return std::optional<Positional>(*(m_posVec.at(index)));
-}
-
-void Command::RegisterArgument(Argument&& arg) {
-  if (m_argMap.find(arg.getKey()) != m_argMap.end()) throw Exception("ArgRegError", "Flag key " + arg.getKey() + " already registered");
-
-  if (arg.hasShortKey()) {
-    if (m_argMap.find(arg.getShortKey()) != m_argMap.end()) throw Exception("ArgRegError", "Flag shortkey " + arg.getShortKey() + " already registered");
+  if (arg->hasShortKey()) {
+    if (m_argMap.find(arg->getShortKey()) != m_argMap.end()) throw Exception("ArgRegError", "Flag shortkey " + arg->getShortKey() + " already registered");
   }
 
-  m_argMap.emplace(arg.getKey(), new Argument(arg));
-  if (arg.hasShortKey()) m_argMap.emplace(arg.getShortKey(), new Argument(arg));
+  m_argMap.emplace(arg->getKey(), arg);
+  if (arg->hasShortKey()) m_argMap.emplace(arg->getShortKey(), arg);
 }
 
-void Command::RegisterArgument(Positional&& arg) {
+void Command::RegisterArgument(Positional* arg) {
+  if (!arg) return;
   for (auto& i : m_posVec) {
-    if (i->getId() == arg.getId()) throw Exception("ArgRegError", "Positional argument id " + std::to_string(arg.getId()) + " already registered");
+    if (i->getId() == arg->getId()) throw Exception("ArgRegError", "Positional argument id " + std::to_string(arg->getId()) + " already registered");
   }
-  m_posVec.emplace_back(new Positional(arg));
+  m_posVec.emplace_back(arg);
 }
 
 void Command::Help(const std::string& appname) const {
@@ -78,6 +62,7 @@ void Command::Help(const std::string& appname) const {
 
       std::string s = "  " + v->getKey();
       if (v->hasShortKey()) s += "," + v->getShortKey();
+      if (v->hasPlaceHolder()) s += "=" + v->getPlaceHolder();
 
       int i = s.size();
       while (i < 25) {
@@ -94,7 +79,7 @@ void Command::Help(const std::string& appname) const {
     std::cout << "\nAvailable arguments:\n";
 
     for (auto& it : m_posVec) {
-      std::string s = "  <" + it->getPlaceHolder() + ">";
+      std::string s = "  " + it->getPlaceHolder();
 
       int i = s.size();
       while (i < 25) {
@@ -112,7 +97,7 @@ void Command::Help(const std::string& appname) const {
 
 Command::~Command() {
   for (auto& [k, v] : m_argMap) {
-    delete v;
+    if (k.substr(1, 1) == "-") delete v;  // Avoid double free
   }
   m_argMap.clear();
 

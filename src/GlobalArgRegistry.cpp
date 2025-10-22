@@ -44,8 +44,8 @@ std::map<std::string, Argument*> GlobalArgRegistry::getMap() const {
 }
 
 GlobalArgRegistry::~GlobalArgRegistry() {
-  for (auto& [_, v] : m_argMap) {
-    delete v;
+  for (auto& [k, v] : m_argMap) {
+    if (k.substr(1, 1) == "-") delete v;  // Avoid double free
   }
   m_argMap.clear();
 }

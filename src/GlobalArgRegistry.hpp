@@ -18,7 +18,7 @@ namespace ChronoCLI {
     void RegisterArgument(Argument* arg);
     bool setOption(const std::string& key, const std::string& value);
 
-    std::optional<Argument> findByKey(const std::string& key) const;
+    Argument* findByKey(const std::string& key) const;
     bool hasArg(const std::string& key) const;
     size_t size() const;
     std::map<std::string, Argument*> getMap() const;

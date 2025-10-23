@@ -2,7 +2,6 @@
 #ifndef CHRONOCLI_COMMANDREGISTRY_HPP
 #define CHRONOCLI_COMMANDREGISTRY_HPP
 
-#include "ArgumentParser.hpp"
 #include "Command.hpp"
 
 namespace ChronoCLI {
@@ -10,7 +9,6 @@ namespace ChronoCLI {
   class CommandRegistry {
    private:
     std::map<std::string, Command*> m_cmdMap;
-    ArgumentParser m_parser;
     GlobalArgRegistry m_gArgs;
 
    protected:
@@ -22,8 +20,7 @@ namespace ChronoCLI {
     virtual int GlobalExec() const { return 0; };
 
    public:
-    CommandRegistry(int argc, const char* argv[]) : m_parser(argc, argv) {}
-    void Run();
+    void Run(int argc, const char* argv[]);
     ~CommandRegistry();
   };
 

@@ -22,12 +22,12 @@ bool GlobalArgRegistry::setOption(const std::string& key, const std::string& val
   return false;
 }
 
-std::optional<Argument> GlobalArgRegistry::findByKey(const std::string& key) const {
+Argument* GlobalArgRegistry::findByKey(const std::string& key) const {
   auto it = m_argMap.find(key);
   if (it != m_argMap.end()) {
-    return std::optional<Argument>(*(it->second));
+    return it->second;
   }
-  return std::nullopt;
+  return nullptr;
 }
 
 bool GlobalArgRegistry::hasArg(const std::string& key) const {

@@ -58,48 +58,54 @@ void CommandRegistry::RegisterGlobalArgument(Argument* arg) {
   m_gArgs.RegisterArgument(arg);
 }
 
-void CommandRegistry::Run() {
-  if (m_parser.hasGlobalOption("-h") || m_parser.hasGlobalOption("--help")) {
-    Help(m_parser.getAppName());
-    return;
-  }
+void CommandRegistry::Run(int argc, const char* argv[]) {
+  try {
+    ArgumentParser m_parser(argc, argv);
 
-  if (m_parser.hasGlobalOption("-v") || m_parser.hasGlobalOption("--version")) {
-    AppVersion();
-    return;
-  }
-
-  for (auto& [gk, gv] : m_parser.getGlobalOptions()) {
-    if (!(m_gArgs.setOption(gk, gv))) {
-      throw CommandError::UnknownOption(gk);
-    }
-  }
-
-  if (GlobalExec() != 0) return;
-
-  if (m_parser.hasCommand()) {
-    auto cit = m_cmdMap.find(m_parser.getCommandName());
-    if (cit == m_cmdMap.end()) throw CommandError::UnknownCommand(m_parser.getCommandName());
-
-    if (m_parser.hasOption("-h") || m_parser.hasOption("--help")) {
-      cit->second->Help(m_parser.getAppName());
+    if (m_parser.hasGlobalOption("-h") || m_parser.hasGlobalOption("--help")) {
+      Help(m_parser.getAppName());
       return;
     }
 
-    for (auto [ok, ov] : m_parser.getOptions()) {
-      if (!(cit->second->setArgument(ok, ov))) {
-        throw CommandError::UnknownOption(ok);
+    if (m_parser.hasGlobalOption("-v") || m_parser.hasGlobalOption("--version")) {
+      AppVersion();
+      return;
+    }
+
+    for (auto& [gk, gv] : m_parser.getGlobalOptions()) {
+      if (!(m_gArgs.setOption(gk, gv))) {
+        throw CommandError::UnknownOption(gk);
       }
     }
 
-    auto pos = m_parser.getPositionals();
-    for (int i = 0; i < pos.size(); ++i) {
-      if (!(cit->second->setPositional(i, pos[i]))) {
-        throw CommandError::TooManyArguments();
-      }
-    }
+    if (GlobalExec() != 0) return;
 
-    cit->second->Exec(m_gArgs);
+    if (m_parser.hasCommand()) {
+      auto cit = m_cmdMap.find(m_parser.getCommandName());
+      if (cit == m_cmdMap.end()) throw CommandError::UnknownCommand(m_parser.getCommandName());
+
+      if (m_parser.hasOption("-h") || m_parser.hasOption("--help")) {
+        cit->second->Help(m_parser.getAppName());
+        return;
+      }
+
+      for (auto [ok, ov] : m_parser.getOptions()) {
+        if (!(cit->second->setArgument(ok, ov))) {
+          throw CommandError::UnknownOption(ok);
+        }
+      }
+
+      auto pos = m_parser.getPositionals();
+      for (int i = 0; i < pos.size(); ++i) {
+        if (!(cit->second->setPositional(i, pos[i]))) {
+          throw CommandError::TooManyArguments();
+        }
+      }
+
+      cit->second->Exec(m_gArgs);
+    }
+  } catch (Exception& e) {
+    e.print();
   }
 }
 

@@ -9,6 +9,12 @@
 
 namespace ChronoCLI {
 
+  /**
+   * @class ArgumentBase
+   * @brief Base class for arguments
+   *
+   * This class holds the core functions and properties of arguments.
+   */
   class ArgumentBase {
    protected:
     std::string m_key;
@@ -38,14 +44,55 @@ namespace ChronoCLI {
     }
 
    public:
+    /**
+     * @brief Populates the members of ArgumentBase class
+     *
+     * This constructor initializes all internal members with given values.
+     *
+     * @param desc Argument description.
+     * @param key Argument key. Defaults to an empty string.
+     * @param placeHolder Argument placeholder. Defaults to an empty string.
+     * @param isRequired Whether the argument is required or not. Defaults to false.
+     *
+     * @throws ChronoCLI::Exception When given an invalid key or placeholder.
+     */
     ArgumentBase(const std::string& desc, const std::string& key = "", const std::string& placeHolder = "", bool isRequired = false);
 
+    /**
+     * @brief Get argument description.
+     */
     std::string getDesc() const;
+
+    /**
+     * @brief Check whether the argument is required or not.
+     */
     bool isRequired() const;
+
+    /**
+     * @brief Check whether the argument value is set or not.
+     */
     bool isSet() const;
+
+    /**
+     * @brief Get argument placeholder.
+     *
+     * This returns an empty string if the placeholder is not given at initialization.
+     */
     std::string getPlaceHolder() const;
+
+    /**
+     * @brief Check whether the argument placeholder is given or not.
+     */
     bool hasPlaceHolder() const;
 
+    /**
+     * @brief Get the value of the argument.
+     *
+     * This returns the value of the argument after converting it's type to the given type.
+     *
+     * @tparam T The type of the value that need to be returned.
+     * @throws ChronoCLI::CommandError::MissingArgument If the argument is required and value isn't set.
+     */
     template <typename T>
     T getValue() const {
       if (!m_value.has_value()) {
@@ -55,6 +102,17 @@ namespace ChronoCLI {
       return m_convert<T>(m_value.value());
     }
 
+    /**
+     * @brief Get the value of the argument as a std::list.
+     *
+     * This returns the value of the argument after splitting it to tokens by a given delimeter and converting their type to the given type.
+     *
+     * @tparam T The type of the std::list that need to be returned.
+     *
+     * @param delim Split key
+     *
+     * @throws ChronoCLI::CommandError::MissingArgument If the argument is required and value isn't set.
+     */
     template <typename T>
     std::list<T> getList(const std::string& delim) const {
       std::list<T> temp;
@@ -78,6 +136,14 @@ namespace ChronoCLI {
     }
   };
 
+  /**
+   * @class Argument
+   * @brief This class represents a normal argument that has a key.
+   *
+   * This class can be used to instantiate keyword arguments and flag arguments.
+   *
+   * @inherits ArgumentBase
+   */
   class Argument : public ArgumentBase {
    private:
     std::optional<std::string> m_shortKey;
@@ -85,45 +151,143 @@ namespace ChronoCLI {
     Argument(const std::string& key, const std::string& description, const std::string& shortKey = "", const std::string& placeHolder = "", bool isRequired = false, bool isFlag = false);
 
    public:
+    /**
+     * @brief Factory method to create an Optional Argument instance.
+     *
+     * This method will return a pointer to a heap allocated instance of the `Argument` class.
+     *
+     * @param key Key name for the argument.
+     * @param description Description for the argument.
+     * @param shortKey Optional shortkey for the argument.
+     * @param placeHolder Optional placeholder for the argument.
+     */
     static Argument* Optional(const std::string& key, const std::string& description, const std::string& shortKey = "", const std::string& placeHolder = "") {
       return new Argument(key, description, shortKey, placeHolder, false, false);
     }
 
+    /**
+     * @brief Factory method to create a Required Argument instance.
+     *
+     * This method will return a pointer to a heap allocated instance of the `Argument` class.
+     *
+     * @param key Key name for the argument.
+     * @param description Description for the argument.
+     * @param shortKey Optional shortkey for the argument.
+     * @param placeHolder Optional placeholder for the argument.
+     */
     static Argument* Required(const std::string& key, const std::string& description, const std::string& shortKey = "", const std::string& placeHolder = "") {
       return new Argument(key, description, shortKey, placeHolder, true, false);
     }
 
+    /**
+     * @brief Factory method to create an Optional Flag instance.
+     *
+     * This method will return a pointer to a heap allocated instance of the `Argument` class.
+     *
+     * @param key Key name for the flag argument.
+     * @param description Description for the flag argument.
+     * @param shortKey Optional shortkey for the flag argument.
+     */
     static Argument* Flag(const std::string& key, const std::string& description, const std::string& shortKey = "") {
       return new Argument(key, description, shortKey, "", false, true);
     }
 
+    /**
+     * @brief Factory method to create a Required Flag instance.
+     *
+     * This method will return a pointer to a heap allocated instance of the `Argument` class.
+     *
+     * @param key Key name for the flag argument.
+     * @param description Description for the flag argument.
+     * @param shortKey Optional shortkey for the flag argument.
+     */
     static Argument* RequiredFlag(const std::string& key, const std::string& description, const std::string& shortKey = "") {
       return new Argument(key, description, shortKey, "", true, true);
     }
 
+    /**
+     * @brief Set a value to the argument.
+     *
+     * This method will set the passed value to the argument. Calling this without passing any value will set the argument value to `1` if it's a flag, otherwise does nothing.
+     *
+     * @param value The string value to be set. Defaults to an empty string.
+     */
     void setValue(const std::string& value = "");
+
+    /**
+     * @brief Get the key name of the argument.
+     *
+     * This method will return the key name of the argument appending `--` to the start.
+     * e.g. `key` -> `--key`
+     */
     std::string getKey() const;
+
+    /**
+     * @brief Get the shortkey name of the argument.
+     *
+     * This method will return the shortkey name of the argument appending `-` to the start.
+     * e.g. `k` -> `-k`
+     * If shortkey not given, this returns an empty string.
+     */
     std::string getShortKey() const;
+
+    /**
+     * @brief Check whether the argument has a shortkey.
+     */
     bool hasShortKey() const;
+
+    /**
+     * @brief Check whether the argument is a flag argument.
+     */
     bool isFlag() const;
   };
 
+  /**
+   * @class Positional
+   * @brief This class represents a positional argument that doesn't have a key.
+   *
+   * This class can be used to instantiate positional arguments.
+   *
+   * @inherits ArgumentBase
+   */
   class Positional : public ArgumentBase {
    private:
     unsigned int m_id;
-
-   public:
     Positional(unsigned int id, const std::string& description, const std::string placeHolder, bool isRequired = false) : ArgumentBase(description, "", placeHolder, isRequired), m_id(id) {}
 
+   public:
+    /**
+     * @brief Factory method to create an Optional Positional instance.
+     *
+     * @param id Id for the argument.
+     * @param description Description for the argument.
+     * @param placeHolder Placeholder for the argument.
+     */
     static Positional* Optional(unsigned int id, const std::string& description, const std::string placeHolder) {
       return new Positional(id, description, placeHolder, false);
     }
 
+    /**
+     * @brief Factory method to create a Required Positional instance.
+     *
+     * @param id Id for the argument.
+     * @param description Description for the argument.
+     * @param placeHolder Placeholder for the argument.
+     */
     static Positional* Required(unsigned int id, const std::string& description, const std::string placeHolder) {
       return new Positional(id, description, placeHolder, true);
     }
 
+    /**
+     * @brief Set a value to the argument.
+     *
+     * @param value The string value to be set.
+     */
     void setValue(const std::string& value);
+
+    /**
+     * @brief Get the id of the argument.
+     */
     unsigned int getId() const;
   };
 

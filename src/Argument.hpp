@@ -10,7 +10,7 @@
 namespace ChronoCLI {
 
   /**
-   * @class ArgumentBase
+   * @class ChronoCLI::ArgumentBase
    * @brief Base class for arguments
    *
    * This class holds the core functions and properties of arguments.
@@ -137,7 +137,7 @@ namespace ChronoCLI {
   };
 
   /**
-   * @class Argument
+   * @class ChronoCLI::Argument
    * @brief This class represents a normal argument that has a key.
    *
    * This class can be used to instantiate keyword arguments and flag arguments.
@@ -243,7 +243,7 @@ namespace ChronoCLI {
   };
 
   /**
-   * @class Positional
+   * @class ChronoCLI::Positional
    * @brief This class represents a positional argument that doesn't have a key.
    *
    * This class can be used to instantiate positional arguments.

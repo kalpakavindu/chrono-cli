@@ -27,7 +27,7 @@ namespace ChronoCLI {
      *
      * @param arg Pointer to the Argument to be registered.
      *
-     * @throws ChronoCLI::Exception If an argument with the same key or shortkey already exists.
+     * @throws ChronoCLI::Exception If an argument with the same key or shortkey already registered.
      */
     void RegisterArgument(Argument* arg);
 
@@ -36,7 +36,7 @@ namespace ChronoCLI {
      *
      * @param arg Pointer to the Positional to be registered.
      *
-     * @throws ChronoCLI::Exception If a positional argument with the same id already exists.
+     * @throws ChronoCLI::Exception If a positional argument with the same id already registered.
      */
     void RegisterArgument(Positional* arg);
 

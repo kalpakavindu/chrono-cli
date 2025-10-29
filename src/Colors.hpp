@@ -2,79 +2,151 @@
 #ifndef CHRONOCLI_COLORS_HPP
 #define CHRONOCLI_COLORS_HPP
 
+#include <string>
+
 namespace ChronoCLI {
 
-  namespace Colors {
+  /**
+   * @enum ChronoCLI::FG
+   * @brief Foreground colors
+   *
+   * This enum specifies the text color. Use attributes ending with `2` for high intensive colors.
+   */
+  enum class FG {
+    BLACK,
+    RED,
+    GREEN,
+    YELLOW,
+    BLUE,
+    PURPLE,
+    CYAN,
+    WHITE,
+    BLACK2,
+    RED2,
+    GREEN2,
+    YELLOW2,
+    BLUE2,
+    PURPLE2,
+    CYAN2,
+    WHITE2,
+    DEFAULT
+  };
 
+  /**
+   * @enum ChronoCLI::BG
+   * @brief Background colors
+   *
+   * This enum specifies the background color of the text. Use attributes ending with `2` for high intensive colors.
+   */
+  enum class BG {
+    BLACK,
+    RED,
+    GREEN,
+    YELLOW,
+    BLUE,
+    PURPLE,
+    CYAN,
+    WHITE,
+    BLACK2,
+    RED2,
+    GREEN2,
+    YELLOW2,
+    BLUE2,
+    PURPLE2,
+    CYAN2,
+    WHITE2,
+    DEFAULT
+  };
+
+  /**
+   * @enum ChronoCLI::TEXT
+   * @brief Text styles
+   *
+   * This enum specifies the text style.
+   */
+  enum class TEXT {
+    REGULAR,
+    BOLD,
+    THIN,
+    ITALIC,
+    UNDERLINE
+  };
+
+  /**
+   * @class ChronoCLI::Style
+   * @brief Text styling class
+   *
+   * Apply stylings for console text using ANSI escape codes.
+   */
+  class Style {
+   private:
+    const std::string _st[5] = {"0", "1", "2", "3", "4"};
+    const std::string _tx[16] = {"30", "31", "32", "33", "34", "35", "36", "37", "90", "91", "92", "93", "94", "95", "96", "97"};
+    const std::string _bg[16] = {"40", "41", "42", "43", "44", "45", "46", "47", "100", "101", "102", "103", "104", "105", "106", "107"};
+    std::string _pref = "\e[";
+    const std::string _reset = "\e[0m";
+
+   public:
     /**
-     * @brief Resets the terminal color to default.
+     * @brief Constructor for Style class
+     *
+     * @param s Text style. Defaults to ChronoCLI::TEXT::REGULAR
+     * @param cf Foreground color. Defaults to ChronoCLI::FG::DEFAULT
+     * @param cb Background color. Defaults to ChronoCLI::BG::DEFAULT
      */
-    template <class CharT, class Traits>
-    constexpr std::basic_ostream<CharT, Traits>& reset(std::basic_ostream<CharT, Traits>& os) {
-      return os << "\033[0m";
+    Style(TEXT s = TEXT::REGULAR, FG cf = FG::DEFAULT, BG cb = BG::DEFAULT) {
+      _pref += _st[static_cast<int>(s)];
+
+      if (cf != FG::DEFAULT) {
+        _pref += ";" + _tx[static_cast<int>(cf)];
+      }
+      if (cb != BG::DEFAULT) {
+        _pref += ";" + _bg[static_cast<int>(cb)];
+      }
+      _pref += "m";
     }
 
     /**
-     * @brief Sets the terminal text color to green.
+     * @brief Constructor for Style class with only colors
+     *
+     * @param cf Foreground color. Defaults to ChronoCLI::FG::DEFAULT
+     * @param cb Background color. Defaults to ChronoCLI::BG::DEFAULT
      */
-    template <class CharT, class Traits>
-    constexpr std::basic_ostream<CharT, Traits>& green(std::basic_ostream<CharT, Traits>& os) {
-      return os << "\033[32m";
+    Style(FG cf = FG::DEFAULT, BG cb = BG::DEFAULT) {
+      _pref += _st[0];
+
+      if (cf != FG::DEFAULT) {
+        _pref += ";" + _tx[static_cast<int>(cf)];
+      }
+      if (cb != BG::DEFAULT) {
+        _pref += ";" + _bg[static_cast<int>(cb)];
+      }
+      _pref += "m";
     }
 
     /**
-     * @brief Sets the terminal text color to red.
+     * @brief Constructor for Style class with only background color
+     *
+     * @param cb Background color. Defaults to ChronoCLI::BG::DEFAULT
      */
-    template <class CharT, class Traits>
-    constexpr std::basic_ostream<CharT, Traits>& red(std::basic_ostream<CharT, Traits>& os) {
-      return os << "\033[31m";
+    Style(BG cb = BG::DEFAULT) {
+      _pref += _st[0];
+
+      if (cb != BG::DEFAULT) {
+        _pref += ";" + _bg[static_cast<int>(cb)];
+      }
+      _pref += "m";
     }
 
     /**
-     * @brief Sets the terminal text color to yellow.
+     * @brief Apply the style to a given string
+     *
+     * @param str The string to style
      */
-    template <class CharT, class Traits>
-    constexpr std::basic_ostream<CharT, Traits>& yellow(std::basic_ostream<CharT, Traits>& os) {
-      return os << "\033[33m";
+    std::string set(const std::string& str) const {
+      return _pref + str + _reset;
     }
-
-    /**
-     * @brief Sets the terminal text color to blue.
-     */
-    template <class CharT, class Traits>
-    constexpr std::basic_ostream<CharT, Traits>& blue(std::basic_ostream<CharT, Traits>& os) {
-      return os << "\033[34m";
-    }
-
-    /**
-     * @brief Colorizes the given text in green.
-     */
-    std::string green(const std::string& text) {
-      return "\033[32m" + text + "\033[0m";
-    }
-
-    /**
-     * @brief Colorizes the given text in red.
-     */
-    std::string red(const std::string& text) {
-      return "\033[31m" + text + "\033[0m";
-    }
-
-    /**
-     * @brief Colorizes the given text in yellow.
-     */
-    std::string yellow(const std::string& text) {
-      return "\033[33m" + text + "\033[0m";
-    }
-
-    /**
-     * @brief Colorizes the given text in blue.
-     */
-    std::string blue(const std::string& text) {
-      return "\033[34m" + text + "\033[0m";
-    }
-
-  }  // namespace Colors
+  };
 
 }  // namespace ChronoCLI
 

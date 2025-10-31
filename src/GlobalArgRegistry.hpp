@@ -12,16 +12,11 @@ namespace ChronoCLI {
    * @class ChronoCLI::GlobalArgRegistry
    * @brief Registry for global command-line arguments.
    */
-  class GlobalArgRegistry {
+  class GlobalArgBase {
    private:
     std::map<std::string, Argument*> m_argMap;
 
    public:
-    /**
-     * @brief Constructs a new GlobalArgRegistry object.
-     */
-    GlobalArgRegistry() {}
-
     /**
      * @brief Registers a new argument in the global registry.
      *
@@ -42,18 +37,48 @@ namespace ChronoCLI {
     bool setOption(const std::string& key, const std::string& value);
 
     /**
+     * @brief Returns the number of registered arguments.
+     */
+    size_t size() const;
+
+    /**
+     * @brief Returns a std::map of all registered arguments.
+     */
+    const std::map<std::string, Argument*>& getMap() const;
+
+    /**
+     * @brief Destructor to clean up allocated Argument instances.
+     */
+    ~GlobalArgBase();
+  };
+
+  /**
+   * @class ChronoCLI::GlobalArgRegistry
+   * @brief Access class for Global Arguments
+   */
+  class GlobalArgRegistry {
+   private:
+    const GlobalArgBase& m_base;
+
+   public:
+    GlobalArgRegistry(const GlobalArgBase& base) : m_base(base) {}
+
+    /**
      * @brief Finds an argument by its key.
      *
      * This returns a `nullptr` if the provided key not exists in the registry.
+     * Use `--` for keys and `-` for shortkeys. eg: `--test` and `-t`.
      *
-     * @param key Argument key or shortkey.
+     * @param key Argument key (starting with `--`) or shortkey (starting with `-`).
      */
     Argument* findByKey(const std::string& key) const;
 
     /**
      * @brief Checks if an argument with the given key exists in the registry.
      *
-     * @param key Argument key or shortkey.
+     * Use `--` for keys and `-` for shortkeys. eg: `--test` and `-t`.
+     *
+     * @param key Argument key (starting with `--`) or shortkey (starting with `-`).
      */
     bool hasArg(const std::string& key) const;
 
@@ -63,14 +88,9 @@ namespace ChronoCLI {
     size_t size() const;
 
     /**
-     * @brief Returns a std::map of all registered arguments.
+     * @brief Returns std::map of a copy of all registered arguments.
      */
     std::map<std::string, Argument*> getMap() const;
-
-    /**
-     * @brief Destructor to clean up allocated Argument instances.
-     */
-    ~GlobalArgRegistry();
   };
 
 }  // namespace ChronoCLI

@@ -2,7 +2,7 @@
 
 using namespace ChronoCLI;
 
-void GlobalArgRegistry::RegisterArgument(Argument* arg) {
+void GlobalArgBase::RegisterArgument(Argument* arg) {
   if (!arg) return;
   if (arg->isRequired()) throw Exception("GArgRegError", "Global options cannot be required. " + arg->getKey() + " registration failed");
   if (m_argMap.find(arg->getKey()) != m_argMap.end()) throw Exception("GArgRegError", "Global option " + arg->getKey() + " already registered");
@@ -13,7 +13,7 @@ void GlobalArgRegistry::RegisterArgument(Argument* arg) {
   if (arg->hasShortKey()) m_argMap.emplace(arg->getShortKey(), arg);
 }
 
-bool GlobalArgRegistry::setOption(const std::string& key, const std::string& value) {
+bool GlobalArgBase::setOption(const std::string& key, const std::string& value) {
   auto it = m_argMap.find(key);
   if (it != m_argMap.end()) {
     it->second->setValue(value);
@@ -22,30 +22,38 @@ bool GlobalArgRegistry::setOption(const std::string& key, const std::string& val
   return false;
 }
 
+size_t GlobalArgBase::size() const {
+  return m_argMap.size();
+}
+
+const std::map<std::string, Argument*>& GlobalArgBase::getMap() const {
+  return m_argMap;
+}
+
+GlobalArgBase::~GlobalArgBase() {
+  for (auto& [k, v] : m_argMap) {
+    if (k.substr(1, 1) == "-") delete v;  // Avoid double free
+  }
+  m_argMap.clear();
+}
+
 Argument* GlobalArgRegistry::findByKey(const std::string& key) const {
-  auto it = m_argMap.find(key);
-  if (it != m_argMap.end()) {
+  auto it = m_base.getMap().find(key);
+  if (it != m_base.getMap().end()) {
     return it->second;
   }
   return nullptr;
 }
 
 bool GlobalArgRegistry::hasArg(const std::string& key) const {
-  if (m_argMap.find(key) != m_argMap.end()) return true;
+  if (m_base.getMap().find(key) != m_base.getMap().end()) return true;
   return false;
 }
 
 size_t GlobalArgRegistry::size() const {
-  return m_argMap.size();
+  return m_base.size();
 }
 
 std::map<std::string, Argument*> GlobalArgRegistry::getMap() const {
-  return m_argMap;
-}
-
-GlobalArgRegistry::~GlobalArgRegistry() {
-  for (auto& [k, v] : m_argMap) {
-    if (k.substr(1, 1) == "-") delete v;  // Avoid double free
-  }
-  m_argMap.clear();
+  return m_base.getMap();
 }

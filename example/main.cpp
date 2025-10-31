@@ -17,14 +17,14 @@ class MyCommand : public Command {
     RegisterArgument(pos1);
   }
 
-  void Exec(const GlobalArgRegistry& gArgs) const override {  // Command execution function (your command logic)
-    Argument* t2 = gArgs.findByKey("test2");                  // Accessing global arguments
+  void Exec(GlobalArgRegistry gArgs) const override {  // Command execution function (your command logic)
+    Argument* t2 = gArgs.findByKey("-t2");             // Accessing global arguments
 
     std::cout << "Test: " << arg1->getValue<std::string>() << std::endl;
     std::cout << "Test positional: " << pos1->getValue<std::string>() << std::endl;
 
-    if (t2) {
-      std::cout << "Global Test 2: " << t2->getValue<bool>() << std::endl;
+    if (t2 != nullptr) {
+      std::cout << "Global Test 2: " << t2->getValue<std::string>() << std::endl;
     }
   }
 };
@@ -32,7 +32,7 @@ class MyCommand : public Command {
 class MyRegistry : public CommandRegistry {
   // Define global arguments
   Argument* gArg1 = Argument::Flag("test1", "Test global flag 1", "t1");
-  Argument* gArg2 = Argument::Flag("test2", "Test global flag 2", "t2");
+  Argument* gArg2 = Argument::Optional("test2", "Test global flag 2", "t2", "TEXT");
 
  public:
   MyRegistry() {  // Global argument and command registration
@@ -44,12 +44,12 @@ class MyRegistry : public CommandRegistry {
 
   int GlobalExec() const override {  // Main execution function (optional)
     if (gArg1->isSet()) {
-      std::cout << "Test 1: " << gArg1->getValue<bool>() << std::endl;
+      std::cout << "Global test 1: " << gArg1->getValue<bool>() << std::endl;
       return 1;
     }
 
     if (gArg2->isSet()) {
-      std::cout << "Test 2: " << gArg2->getValue<bool>() << std::endl;
+      std::cout << "Global test 2: " << gArg2->getValue<std::string>() << std::endl;
       return 0;
     }
 

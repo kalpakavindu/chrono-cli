@@ -9,7 +9,7 @@ namespace ChronoCLI {
   class CommandRegistry {
    private:
     std::map<std::string, Command*> m_cmdMap;
-    GlobalArgRegistry m_gArgs;
+    GlobalArgBase m_gArgs;
 
    protected:
     /**

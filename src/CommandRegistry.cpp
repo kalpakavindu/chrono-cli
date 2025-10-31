@@ -102,7 +102,7 @@ void CommandRegistry::Run(int argc, const char* argv[]) {
         }
       }
 
-      cit->second->Exec(m_gArgs);
+      cit->second->Exec(GlobalArgRegistry(m_gArgs));
     }
   } catch (Exception& e) {
     e.print();

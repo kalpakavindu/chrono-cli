@@ -86,7 +86,7 @@ namespace ChronoCLI {
      *
      * @param globalArgs Reference to the GlobalArgRegistry to access global arguments.
      */
-    virtual void Exec(const GlobalArgRegistry& globalArgs) const = 0;
+    virtual void Exec(GlobalArgRegistry globalArgs) const = 0;
 
     /**
      * @brief Display help information for the command.

@@ -22,6 +22,7 @@ namespace ChronoCLI {
     bool m_isRequired = false;
     std::optional<std::string> m_value;
     std::optional<std::string> m_placeHolder;
+    std::optional<std::string> m_defaultValue;
 
     template <typename T>
     T m_convert(const std::string& value) const {
@@ -52,16 +53,32 @@ namespace ChronoCLI {
      * @param desc Argument description.
      * @param key Argument key. Defaults to an empty string.
      * @param placeHolder Argument placeholder. Defaults to an empty string.
+     * @param defaultValue Optional default value.
      * @param isRequired Whether the argument is required or not. Defaults to false.
      *
      * @throws ChronoCLI::Exception When given an invalid key or placeholder.
      */
-    ArgumentBase(const std::string& desc, const std::string& key = "", const std::string& placeHolder = "", bool isRequired = false);
+    ArgumentBase(
+        const std::string& desc,
+        const std::string& key = "",
+        const std::string& placeHolder = "",
+        const std::string& defaultValue = "",
+        bool isRequired = false);
 
     /**
      * @brief Get argument description.
      */
     std::string getDesc() const;
+
+    /**
+     * @brief Get default value
+     */
+    std::string getDefaultValue() const;
+
+    /**
+     * @brief Check whether the argument has default value
+     */
+    bool hasDefaultValue() const;
 
     /**
      * @brief Check whether the argument is required or not.
@@ -95,11 +112,16 @@ namespace ChronoCLI {
      */
     template <typename T>
     T getValue() const {
-      if (!m_value.has_value()) {
-        if (m_isRequired) throw CommandError::MissingArgument(m_key);
-        return m_convert<T>("");
+      if (m_value.has_value()) {
+        return m_convert<T>(m_value.value());
       }
-      return m_convert<T>(m_value.value());
+
+      if (m_defaultValue.has_value()) {
+        return m_convert<T>(m_defaultValue.value());
+      }
+
+      if (m_isRequired) throw CommandError::MissingArgument(m_key);
+      return m_convert<T>("");
     }
 
     /**
@@ -118,11 +140,13 @@ namespace ChronoCLI {
       std::list<T> temp;
 
       if (!m_value.has_value()) {
-        if (m_isRequired) throw CommandError::MissingArgument(m_key);
-        return temp;
+        if (!m_defaultValue.has_value()) {
+          if (m_isRequired) throw CommandError::MissingArgument(m_key);
+          return temp;
+        }
       }
 
-      std::string v = m_value.value();
+      std::string v = m_value.has_value() ? m_value.value() : m_defaultValue.value();
       size_t dPos = v.find(delim);
 
       while (dPos != std::string::npos) {
@@ -148,7 +172,14 @@ namespace ChronoCLI {
    private:
     std::optional<std::string> m_shortKey;
     bool m_isFlag = false;
-    Argument(const std::string& key, const std::string& description, const std::string& shortKey = "", const std::string& placeHolder = "", bool isRequired = false, bool isFlag = false);
+    Argument(
+        const std::string& key,
+        const std::string& description,
+        const std::string& shortKey = "",
+        const std::string& placeHolder = "",
+        const std::string& defaultValue = "",
+        bool isRequired = false,
+        bool isFlag = false);
 
    public:
     /**
@@ -160,9 +191,10 @@ namespace ChronoCLI {
      * @param description Description for the argument.
      * @param shortKey Optional shortkey for the argument.
      * @param placeHolder Optional placeholder for the argument.
+     * @param defaultValue Optional default value.
      */
-    static Argument* Optional(const std::string& key, const std::string& description, const std::string& shortKey = "", const std::string& placeHolder = "") {
-      return new Argument(key, description, shortKey, placeHolder, false, false);
+    static Argument* Optional(const std::string& key, const std::string& description, const std::string& shortKey = "", const std::string& placeHolder = "", const std::string& defaultValue = "") {
+      return new Argument(key, description, shortKey, placeHolder, defaultValue, false, false);
     }
 
     /**
@@ -174,9 +206,10 @@ namespace ChronoCLI {
      * @param description Description for the argument.
      * @param shortKey Optional shortkey for the argument.
      * @param placeHolder Optional placeholder for the argument.
+     * @param defaultValue Optional default value.
      */
-    static Argument* Required(const std::string& key, const std::string& description, const std::string& shortKey = "", const std::string& placeHolder = "") {
-      return new Argument(key, description, shortKey, placeHolder, true, false);
+    static Argument* Required(const std::string& key, const std::string& description, const std::string& shortKey = "", const std::string& placeHolder = "", const std::string& defaultValue = "") {
+      return new Argument(key, description, shortKey, placeHolder, defaultValue, true, false);
     }
 
     /**
@@ -189,7 +222,7 @@ namespace ChronoCLI {
      * @param shortKey Optional shortkey for the flag argument.
      */
     static Argument* Flag(const std::string& key, const std::string& description, const std::string& shortKey = "") {
-      return new Argument(key, description, shortKey, "", false, true);
+      return new Argument(key, description, shortKey, "", "", false, true);
     }
 
     /**
@@ -202,7 +235,7 @@ namespace ChronoCLI {
      * @param shortKey Optional shortkey for the flag argument.
      */
     static Argument* RequiredFlag(const std::string& key, const std::string& description, const std::string& shortKey = "") {
-      return new Argument(key, description, shortKey, "", true, true);
+      return new Argument(key, description, shortKey, "", "", true, true);
     }
 
     /**
@@ -253,7 +286,12 @@ namespace ChronoCLI {
   class Positional : public ArgumentBase {
    private:
     unsigned int m_id;
-    Positional(unsigned int id, const std::string& description, const std::string placeHolder, bool isRequired = false) : ArgumentBase(description, "", placeHolder, isRequired), m_id(id) {}
+    Positional(
+        unsigned int id,
+        const std::string& description,
+        const std::string placeHolder,
+        const std::string& defaultValue,
+        bool isRequired = false) : ArgumentBase(description, "", placeHolder, defaultValue, isRequired), m_id(id) {}
 
    public:
     /**
@@ -262,9 +300,10 @@ namespace ChronoCLI {
      * @param id Id for the argument.
      * @param description Description for the argument.
      * @param placeHolder Placeholder for the argument.
+     * @param defaultValue Optional default value.
      */
-    static Positional* Optional(unsigned int id, const std::string& description, const std::string placeHolder) {
-      return new Positional(id, description, placeHolder, false);
+    static Positional* Optional(unsigned int id, const std::string& description, const std::string placeHolder, const std::string& defaultValue = "") {
+      return new Positional(id, description, placeHolder, defaultValue, false);
     }
 
     /**
@@ -273,9 +312,10 @@ namespace ChronoCLI {
      * @param id Id for the argument.
      * @param description Description for the argument.
      * @param placeHolder Placeholder for the argument.
+     * @param defaultValue Optional default value.
      */
-    static Positional* Required(unsigned int id, const std::string& description, const std::string placeHolder) {
-      return new Positional(id, description, placeHolder, true);
+    static Positional* Required(unsigned int id, const std::string& description, const std::string placeHolder, const std::string& defaultValue = "") {
+      return new Positional(id, description, placeHolder, defaultValue, true);
     }
 
     /**

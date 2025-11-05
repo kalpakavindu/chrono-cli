@@ -2,7 +2,12 @@
 
 using namespace ChronoCLI;
 
-ArgumentBase::ArgumentBase(const std::string& desc, const std::string& key, const std::string& placeHolder, bool isRequired) : m_desc(desc), m_isRequired(isRequired) {
+ArgumentBase::ArgumentBase(
+    const std::string& desc,
+    const std::string& key,
+    const std::string& placeHolder,
+    const std::string& defaultValue,
+    bool isRequired) : m_desc(desc), m_isRequired(isRequired) {
   if (!(key.empty())) {
     if (key.substr(0, 1) == "-") throw Exception("ArgInitError", "Key must not start with '-'");
     m_key = m_trim(key);
@@ -12,10 +17,22 @@ ArgumentBase::ArgumentBase(const std::string& desc, const std::string& key, cons
     if (placeHolder.length() > 10) throw Exception("ArgInitError", "Placeholder should have maximum of 10 characters only");
     m_placeHolder = m_trim(placeHolder);
   }
+
+  if (!(defaultValue.empty())) {
+    m_defaultValue = defaultValue;
+  }
 }
 
 std::string ArgumentBase::getDesc() const {
   return m_desc;
+}
+
+std::string ArgumentBase::getDefaultValue() const {
+  return m_defaultValue.has_value() ? m_defaultValue.value() : "";
+}
+
+bool ArgumentBase::hasDefaultValue() const {
+  return m_defaultValue.has_value();
 }
 
 bool ArgumentBase::isSet() const {
@@ -42,8 +59,9 @@ Argument::Argument(
     const std::string& description,
     const std::string& shortKey,
     const std::string& placeHolder,
+    const std::string& defaultValue,
     bool isRequired,
-    bool isFlag) : ArgumentBase(description, key, placeHolder, isRequired), m_isFlag(isFlag) {
+    bool isFlag) : ArgumentBase(description, key, placeHolder, defaultValue, isRequired), m_isFlag(isFlag) {
   if (shortKey != "") {
     if (shortKey.length() > 5) throw Exception("ArgInitError", "ShortKey must have maximum 5 characters");
     if (shortKey.substr(0, 1) == "-") throw Exception("ArgInitError", "Shortkey must not start with '-'");

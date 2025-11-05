@@ -8,7 +8,7 @@ using namespace ChronoCLI;
 
 class MyCommand : public Command {
   // Define arguments
-  Argument* arg1 = Argument::Required("test", "Test keyword argument", "t", "TEXT");
+  Argument* arg1 = Argument::Required("test", "Test keyword argument", "t", "TEXT", "default value for test");
   Positional* pos1 = Positional::Optional(0, "Test positional", "TEXT");
 
  public:

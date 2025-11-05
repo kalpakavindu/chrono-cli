@@ -6,67 +6,112 @@
 
 using namespace ChronoCLI;
 
-void CommandRegistry::m_Help(const std::string& appname) const {
+void CommandRegistry::Help(const std::string& appname) const {
   std::cout << "Usage:\n";
   std::cout << "  " << appname << " [COMMAND] [OPTIONS] <ARGUMENTS>\n";
-  std::cout << "\nAvailable commands:\n";
-  for (auto& it : m_commands) {
-    std::string s = "  " + it.first;
-    int i = s.size();
-    while (i < 15) {
-      s += " ";
-      ++i;
+
+  std::cout << "\nAvailable options:\n";
+  std::cout << "  --help,-h              " << "Get help\n";
+  std::cout << "  --version,-v           " << "Get app version\n";
+  if (m_gArgs.size() > 0) {
+    for (auto& [k, v] : m_gArgs.getMap()) {
+      if (k.substr(1, 1) != "-") continue;
+
+      std::string s = "  " + v->getKey();
+      if (v->hasShortKey()) s += "," + v->getShortKey();
+      int i = s.size();
+      while (i < 25) {
+        s += " ";
+        ++i;
+      }
+      s += v->getDesc();
+      std::cout << s << "\n";
     }
-    s += it.second->getDesc();
-    std::cout << s << "\n";
   }
 
-  std::cout << "\nUse --help, -h option for get this message or use it with commands to get command help.";
+  if (m_cmdMap.size() > 0) {
+    std::cout << "\nAvailable commands:\n";
+    for (auto& [_, v] : m_cmdMap) {
+      std::string s = "  " + v->getName();
+      int i = s.size();
+      while (i < 25) {
+        s += " ";
+        ++i;
+      }
+      s += v->getDesc();
+      std::cout << s << "\n";
+    }
+  }
+
+  std::cout << "\nUse --help, -h option with commands to get command help.";
   std::cout << std::endl;
 }
 
-void CommandRegistry::RegisterCommand(Command& cmd) {
-  m_commands[cmd.getName()] = &cmd;
+void CommandRegistry::RegisterCommand(Command* cmd) {
+  if (!cmd) return;
+  if (m_cmdMap.find(cmd->getName()) != m_cmdMap.end()) throw Exception("CmdRegError", "Command " + cmd->getName() + " already registered");
+  m_cmdMap.emplace(cmd->getName(), cmd);
+}
+
+void CommandRegistry::RegisterGlobalArgument(Argument* arg) {
+  if (!arg) return;
+  m_gArgs.RegisterArgument(arg);
 }
 
 void CommandRegistry::Run(int argc, const char* argv[]) {
-  if (m_commands.size() == 0) throw Exception("No commands were registered");
+  try {
+    ArgumentParser m_parser(argc, argv);
 
-  ArgumentParser parser(argc, argv);  // Initialize parser
-
-  if (parser.hasGlobalKey("-h") || parser.hasGlobalKey("--help")) {
-    return m_Help(parser.getAppName());
-  }
-
-  if (parser.hasCommand()) {
-    auto cit = m_commands.find(parser.getCommandName());
-    if (cit == m_commands.end()) throw CommandError::UnknownCommand(parser.getCommandName());
-
-    if (parser.hasKey("-h") || parser.hasKey("--help")) {
-      return cit->second->Help(parser.getAppName());
+    if (m_parser.hasGlobalOption("-h") || m_parser.hasGlobalOption("--help")) {
+      Help(m_parser.getAppName());
+      return;
     }
 
-    // Populate command arguments
-    for (auto& a : cit->second->getArgs()) {
-      if (parser.hasKey(a.first)) {
-        a.second->setValue(parser.getValue(a.first));
-      } else {
-        if (a.second->isRequired()) throw CommandError::MissingArgument(a.first);
+    if (m_parser.hasGlobalOption("-v") || m_parser.hasGlobalOption("--version")) {
+      AppVersion();
+      return;
+    }
+
+    for (auto& [gk, gv] : m_parser.getGlobalOptions()) {
+      if (!(m_gArgs.setOption(gk, gv))) {
+        throw CommandError::UnknownOption(gk);
       }
     }
 
-    // Populate positional arguments
-    auto& positionals = cit->second->getPositionalArgs();
-    for (int i = 0; i < positionals.size(); i++) {
-      if ((parser.getPositionalArgs().size() > 0) && (positionals.size() <= parser.getPositionalArgs().size())) {
-        positionals[i]->setValue(parser.getPositionalArgs()[i]);
-      } else {
-        if (positionals[i]->isRequired()) throw CommandError::MissingArgument(positionals[i]->getKeyName());
-      }
-    }
+    if (GlobalExec() != 0) return;
 
-    cit->second->Exec();
-  } else {
-    throw CommandError::CommandError("UsageError", "No command specified");
+    if (m_parser.hasCommand()) {
+      auto cit = m_cmdMap.find(m_parser.getCommandName());
+      if (cit == m_cmdMap.end()) throw CommandError::UnknownCommand(m_parser.getCommandName());
+
+      if (m_parser.hasOption("-h") || m_parser.hasOption("--help")) {
+        cit->second->Help(m_parser.getAppName());
+        return;
+      }
+
+      for (auto [ok, ov] : m_parser.getOptions()) {
+        if (!(cit->second->setArgument(ok, ov))) {
+          throw CommandError::UnknownOption(ok);
+        }
+      }
+
+      auto pos = m_parser.getPositionals();
+      for (int i = 0; i < pos.size(); ++i) {
+        if (!(cit->second->setPositional(i, pos[i]))) {
+          throw CommandError::TooManyArguments();
+        }
+      }
+
+      cit->second->Exec(GlobalArgRegistry(m_gArgs));
+    }
+  } catch (Exception& e) {
+    e.print();
   }
+}
+
+CommandRegistry::~CommandRegistry() {
+  for (auto& [_, v] : m_cmdMap) {
+    delete v;
+  }
+  m_cmdMap.clear();
 }

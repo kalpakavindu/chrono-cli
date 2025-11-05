@@ -1,0 +1,59 @@
+#include "GlobalArgRegistry.hpp"
+
+using namespace ChronoCLI;
+
+void GlobalArgBase::RegisterArgument(Argument* arg) {
+  if (!arg) return;
+  if (arg->isRequired()) throw Exception("GArgRegError", "Global options cannot be required. " + arg->getKey() + " registration failed");
+  if (m_argMap.find(arg->getKey()) != m_argMap.end()) throw Exception("GArgRegError", "Global option " + arg->getKey() + " already registered");
+  if (arg->hasShortKey()) {
+    if (m_argMap.find(arg->getShortKey()) != m_argMap.end()) throw Exception("GArgRegError", "Global option " + arg->getShortKey() + " already registered");
+  }
+  m_argMap.emplace(arg->getKey(), arg);
+  if (arg->hasShortKey()) m_argMap.emplace(arg->getShortKey(), arg);
+}
+
+bool GlobalArgBase::setOption(const std::string& key, const std::string& value) {
+  auto it = m_argMap.find(key);
+  if (it != m_argMap.end()) {
+    it->second->setValue(value);
+    return true;
+  }
+  return false;
+}
+
+size_t GlobalArgBase::size() const {
+  return m_argMap.size();
+}
+
+const std::map<std::string, Argument*>& GlobalArgBase::getMap() const {
+  return m_argMap;
+}
+
+GlobalArgBase::~GlobalArgBase() {
+  for (auto& [k, v] : m_argMap) {
+    if (k.substr(1, 1) == "-") delete v;  // Avoid double free
+  }
+  m_argMap.clear();
+}
+
+Argument* GlobalArgRegistry::findByKey(const std::string& key) const {
+  auto it = m_base.getMap().find(key);
+  if (it != m_base.getMap().end()) {
+    return it->second;
+  }
+  return nullptr;
+}
+
+bool GlobalArgRegistry::hasArg(const std::string& key) const {
+  if (m_base.getMap().find(key) != m_base.getMap().end()) return true;
+  return false;
+}
+
+size_t GlobalArgRegistry::size() const {
+  return m_base.size();
+}
+
+std::map<std::string, Argument*> GlobalArgRegistry::getMap() const {
+  return m_base.getMap();
+}

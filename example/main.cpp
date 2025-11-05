@@ -1,40 +1,66 @@
 #include <iostream>
 
 #include "src/Argument.hpp"
+#include "src/Command.hpp"
 #include "src/CommandRegistry.hpp"
 
 using namespace ChronoCLI;
 
 class MyCommand : public Command {
- private:
-  Argument arg1 = Argument("arg1", "", false, "Test argument 1");
-  Argument arg2 = Argument("arg2", "a2", true, "Test argument 2");
-  PositionalArgument arg3 = PositionalArgument("test_name", true, "Test name for the argument");
+  // Define arguments
+  Argument* arg1 = Argument::Required("test", "Test keyword argument", "t", "TEXT", "default value for test");
+  Positional* pos1 = Positional::Optional(0, "Test positional", "TEXT");
 
  public:
-  MyCommand() : Command("test", "Test command") {
+  MyCommand() : Command("test", "Test command") {  // Command definition and argument registration
     RegisterArgument(arg1);
-    RegisterArgument(arg2);
-    RegisterArgument(arg3);
+    RegisterArgument(pos1);
   }
 
-  void Exec() override {
-    std::cout << "Command completed:" << "\n";
-    std::cout << arg1.getKeyName() << ": " << arg1.getValue<std::string>() << "\n";
-    std::cout << arg2.getKeyName() << ": " << arg2.getValue<std::string>() << "\n";
-    std::cout << arg3.getKeyName() << ": " << arg3.getValue<std::string>() << std::endl;
+  void Exec(GlobalArgRegistry gArgs) const override {  // Command execution function (your command logic)
+    Argument* t2 = gArgs.findByKey("-t2");             // Accessing global arguments
+
+    std::cout << "Test: " << arg1->getValue<std::string>() << std::endl;
+    std::cout << "Test positional: " << pos1->getValue<std::string>() << std::endl;
+
+    if (t2 != nullptr) {
+      std::cout << "Global Test 2: " << t2->getValue<std::string>() << std::endl;
+    }
+  }
+};
+
+class MyRegistry : public CommandRegistry {
+  // Define global arguments
+  Argument* gArg1 = Argument::Flag("test1", "Test global flag 1", "t1");
+  Argument* gArg2 = Argument::Optional("test2", "Test global flag 2", "t2", "TEXT");
+
+ public:
+  MyRegistry() {  // Global argument and command registration
+    RegisterGlobalArgument(gArg1);
+    RegisterGlobalArgument(gArg2);
+
+    RegisterCommand(new MyCommand());
+  }
+
+  int GlobalExec() const override {  // Main execution function (optional)
+    if (gArg1->isSet()) {
+      std::cout << "Global test 1: " << gArg1->getValue<bool>() << std::endl;
+      return 1;
+    }
+
+    if (gArg2->isSet()) {
+      std::cout << "Global test 2: " << gArg2->getValue<std::string>() << std::endl;
+      return 0;
+    }
+
+    return 0;
+  }
+
+  void AppVersion() const override {  // App version command (must defined)
+    std::cout << "v1.0.0" << std::endl;
   }
 };
 
 int main(int argc, const char* argv[]) {
-  try {
-    MyCommand cmd1;
-
-    CommandRegistry C;
-    C.RegisterCommand(cmd1);
-
-    C.Run(argc, argv);
-  } catch (Exception& e) {
-    e.print();
-  }
+  MyRegistry().Run(argc, argv);  // Run the registry
 }

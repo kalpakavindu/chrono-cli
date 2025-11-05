@@ -2,25 +2,108 @@
 
 using namespace ChronoCLI;
 
-Argument::Argument(const std::string& key, const std::string& shortkey, bool required, const std ::string& description) : m_description(description), m_isRequired(required) {
-  if ((key.substr(0, 1) == "-") || (key.substr(0, 1) == "_")) throw Exception("Invalid value for argument key");
-  if (key == "help") throw Exception("Cannot use 'help' as a key for custom arguments");
-  if (key.size() == 1) throw Exception("Minimum 2 characters required for argument key");
-  m_key = key;
+ArgumentBase::ArgumentBase(
+    const std::string& desc,
+    const std::string& key,
+    const std::string& placeHolder,
+    const std::string& defaultValue,
+    bool isRequired) : m_desc(desc), m_isRequired(isRequired) {
+  if (!(key.empty())) {
+    if (key.substr(0, 1) == "-") throw Exception("ArgInitError", "Key must not start with '-'");
+    m_key = m_trim(key);
+  }
 
-  if ((shortkey.substr(0, 1) == "-") || (shortkey.substr(0, 1) == "_")) throw Exception("Invalid value for argument short key");
-  if (shortkey == "h") throw Exception("Cannot use 'h' as a short key for custom arguments");
-  if (shortkey.size() > 3) throw Exception("Maximum 3 character string considered as a short key");
-  if (!shortkey.empty()) m_shortkey = shortkey;
+  if (!(placeHolder.empty())) {
+    if (placeHolder.length() > 10) throw Exception("ArgInitError", "Placeholder should have maximum of 10 characters only");
+    m_placeHolder = m_trim(placeHolder);
+  }
+
+  if (!(defaultValue.empty())) {
+    m_defaultValue = defaultValue;
+  }
 }
 
-std::string Argument::getKeyName() const {
+std::string ArgumentBase::getDesc() const {
+  return m_desc;
+}
+
+std::string ArgumentBase::getDefaultValue() const {
+  return m_defaultValue.has_value() ? m_defaultValue.value() : "";
+}
+
+bool ArgumentBase::hasDefaultValue() const {
+  return m_defaultValue.has_value();
+}
+
+bool ArgumentBase::isSet() const {
+  return m_value.has_value();
+}
+
+bool ArgumentBase::isRequired() const {
+  return m_isRequired;
+}
+
+std::string ArgumentBase::getPlaceHolder() const {
+  if (m_placeHolder.has_value()) {
+    return "<" + m_placeHolder.value() + ">";
+  }
+  return "";
+}
+
+bool ArgumentBase::hasPlaceHolder() const {
+  return m_placeHolder.has_value();
+}
+
+Argument::Argument(
+    const std::string& key,
+    const std::string& description,
+    const std::string& shortKey,
+    const std::string& placeHolder,
+    const std::string& defaultValue,
+    bool isRequired,
+    bool isFlag) : ArgumentBase(description, key, placeHolder, defaultValue, isRequired), m_isFlag(isFlag) {
+  if (shortKey != "") {
+    if (shortKey.length() > 5) throw Exception("ArgInitError", "ShortKey must have maximum 5 characters");
+    if (shortKey.substr(0, 1) == "-") throw Exception("ArgInitError", "Shortkey must not start with '-'");
+    m_shortKey = m_trim(shortKey);
+  }
+}
+
+std::string Argument::getKey() const {
   return "--" + m_key;
 }
 
-std::string Argument::getShortkeyName() const {
-  if (m_shortkey.has_value()) {
-    return "-" + m_shortkey.value();
+std::string Argument::getShortKey() const {
+  if (m_shortKey.has_value()) {
+    return "-" + m_shortKey.value();
   }
   return "";
+}
+
+bool Argument::isFlag() const {
+  return m_isFlag;
+}
+
+bool Argument::hasShortKey() const {
+  return m_shortKey.has_value();
+}
+
+void Argument::setValue(const std::string& value) {
+  if (value != "") {
+    m_setValue(value);
+  } else {
+    if (m_isFlag) {
+      m_setValue("1");
+    }
+  }
+}
+
+unsigned int Positional::getId() const {
+  return m_id;
+}
+
+void Positional::setValue(const std::string& value) {
+  if (value != "" || !value.empty()) {
+    m_setValue(value);
+  }
 }
